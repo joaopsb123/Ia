@@ -5,25 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minha IA Personalizada</title>
     <style>
-        /* ESTILOS GERAIS BASEADOS NA IMAGEM */
         @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Google Sans', sans-serif; }
         body { background-color: #000; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* TELAS */
         .screen { display: none; flex-direction: column; height: 100vh; padding: 20px; }
         .screen.active { display: flex; }
 
-        /* TELA DE LOGIN */
         #login-screen { justify-content: center; align-items: center; gap: 20px; }
         .login-box { background: #1e1e1e; padding: 30px; border-radius: 16px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; }
         .login-box input { background: #333; border: none; padding: 12px; color: white; border-radius: 8px; font-size: 16px; }
         .btn { padding: 12px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: 500; transition: 0.2s; }
         .btn-primary { background: #4285f4; color: white; }
+        .btn-success { background: #34A853; color: white; margin-top: 10px;}
         .btn-google { background: white; color: black; display: flex; align-items: center; justify-content: center; gap: 10px; }
         
-        /* TELA DA IA (CHAT) */
         header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
         header h1 { font-size: 20px; font-weight: 500; }
         .avatar-btn { background: #6b43a4; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 16px; cursor: pointer; }
@@ -37,20 +34,19 @@
         .user-msg { background: #303030; align-self: flex-end; border-bottom-right-radius: 4px; }
         .ai-msg { background: transparent; align-self: flex-start; }
 
-        /* BARRA DE INPUT */
         .input-area { background: #1e1e1e; border-radius: 30px; padding: 10px 20px; display: flex; align-items: center; gap: 15px; margin-bottom: 10px; }
         .input-area input { flex: 1; background: transparent; border: none; color: white; font-size: 16px; outline: none; }
         .input-area button { background: none; border: none; color: #a8a8a8; font-size: 20px; cursor: pointer; }
-        .btn-pro { border: 1px solid #444; border-radius: 20px; padding: 4px 12px; font-size: 14px; }
+        .btn-pro { border: 1px solid #444; border-radius: 20px; padding: 4px 12px; font-size: 14px; background: transparent; color: white;}
 
-        /* TELA DE ENSINAR */
-        #teach-screen { background: #000; }
+        #teach-screen { background: #000; overflow-y: auto; }
         .teach-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .teach-form { display: flex; flex-direction: column; gap: 15px; background: #1e1e1e; padding: 20px; border-radius: 16px; }
+        .teach-form { display: flex; flex-direction: column; gap: 10px; background: #1e1e1e; padding: 20px; border-radius: 16px; margin-bottom: 20px; }
         .teach-form label { font-size: 14px; color: #a8a8a8; }
         .teach-form input, .teach-form textarea { background: #333; border: none; padding: 12px; color: white; border-radius: 8px; font-size: 16px; resize: vertical; }
-        .teach-form button { background: #4285f4; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-
+        
+        .divider { height: 1px; background: #333; margin: 15px 0; }
+        .help-text { font-size: 12px; color: #888; }
     </style>
 </head>
 <body>
@@ -99,26 +95,27 @@
         </div>
         
         <div class="teach-form">
-            <p>Define o que o utilizador vai escrever e o que a IA deve responder.</p>
-            
-            <label>Quando o utilizador disser (Ex: Olá tudo bem):</label>
-            <input type="text" id="teach-trigger" placeholder="Pergunta ou palavra-chave">
-            
+            <h3 style="font-size: 16px;">Modo 1: Uma a Uma</h3>
+            <label>Quando o utilizador disser:</label>
+            <input type="text" id="teach-trigger" placeholder="Ex: quem criou o jogo x">
             <label>A IA deve responder:</label>
-            <textarea id="teach-response" rows="4" placeholder="Resposta da IA"></textarea>
-            
-            <button id="btn-save-teach">Guardar no Cérebro da IA (Firebase)</button>
+            <textarea id="teach-response" rows="2" placeholder="Foi a empresa Y"></textarea>
+            <button class="btn btn-primary" id="btn-save-teach">Guardar no Cérebro</button>
         </div>
-        <p id="teach-status" style="color: #34A853; margin-top: 10px; display: none;">Ensinamento guardado com sucesso!</p>
+
+        <div class="teach-form">
+            <h3 style="font-size: 16px;">Modo 2: Aprender por Textão</h3>
+            <p class="help-text">Cola várias de uma vez! Regra: usa o formato <b>pergunta = resposta</b> (uma por linha).</p>
+            <textarea id="teach-bulk" rows="6" placeholder="olá = oi, como estás?&#10;quem te criou = fui criado por ti&#10;qual é a capital de portugal = lisboa"></textarea>
+            <button class="btn btn-success" id="btn-save-bulk">Aprender Tudo de Uma Vez</button>
+        </div>
     </div>
 
     <script type="module">
-        // Importar Firebase via CDN para ficheiro HTML único
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Configuração Firebase do Utilizador
         const firebaseConfig = {
             apiKey: "AIzaSyCrJ47i72d-rPtvOnXc84o0Enp0zkpYv_4",
             authDomain: "ia-123-a8ea8.firebaseapp.com",
@@ -128,10 +125,19 @@
             appId: "1:232554388490:web:2ad57cab51484837f593f3"
         };
 
-        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // CONHECIMENTO DE FÁBRICA (O que a IA já sabe nativamente sem ir ao banco de dados)
+        const baseKnowledge = [
+            { trigger: "olá", response: "Olá! Como te posso ajudar hoje?" },
+            { trigger: "oi", response: "Oi! Tudo bem contigo?" },
+            { trigger: "bom dia", response: "Bom dia! Pronto para começar?" },
+            { trigger: "quem és tu", response: "Sou a tua IA pessoal, construída por ti sem APIs de terceiros!" },
+            { trigger: "tudo bem", response: "Tudo ótimo no mundo digital! E contigo?" },
+            { trigger: "o que sabes fazer", response: "Eu aprendo contigo! Vai ao menu e ensina-me coisas novas usando o Textão!" }
+        ];
 
         // Elementos UI
         const loginScreen = document.getElementById('login-screen');
@@ -141,7 +147,6 @@
         const chatInput = document.getElementById('chat-input');
         const greetingBox = document.getElementById('greeting-box');
 
-        // Navegação
         function showScreen(screen) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             screen.classList.add('active');
@@ -150,7 +155,6 @@
         document.getElementById('btn-open-teach').onclick = () => showScreen(teachScreen);
         document.getElementById('btn-back-chat').onclick = () => showScreen(chatScreen);
 
-        // Autenticação
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 showScreen(chatScreen);
@@ -162,108 +166,116 @@
             }
         });
 
-        // Login Email
         document.getElementById('btn-login-email').onclick = async () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                // Se falhar o login, tenta registar
-                try {
-                    await createUserWithEmailAndPassword(auth, email, password);
-                } catch (err) {
-                    alert("Erro no Login/Registo: " + err.message);
-                }
+            try { await signInWithEmailAndPassword(auth, email, password); } 
+            catch {
+                try { await createUserWithEmailAndPassword(auth, email, password); } 
+                catch (err) { alert("Erro: " + err.message); }
             }
         };
 
-        // Login Google
         document.getElementById('btn-login-google').onclick = async () => {
-            const provider = new GoogleAuthProvider();
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                alert("Erro Google Login: " + error.message);
-            }
+            try { await signInWithPopup(auth, new GoogleAuthProvider()); } 
+            catch (error) { alert("Erro Google: " + error.message); }
         };
 
-        // Logout
         document.getElementById('btn-logout').onclick = () => signOut(auth);
 
-        // Aba "Ensinar IA" -> Guardar no Firebase (Firestore)
+        // SALVAR UMA A UMA
         document.getElementById('btn-save-teach').onclick = async () => {
             const trigger = document.getElementById('teach-trigger').value.toLowerCase().trim();
             const response = document.getElementById('teach-response').value.trim();
-
             if (!trigger || !response) return alert("Preenche os dois campos!");
 
             try {
-                await addDoc(collection(db, "ia_brain"), {
-                    trigger: trigger,
-                    response: response,
-                    timestamp: new Date()
-                });
-                
+                await addDoc(collection(db, "ia_brain"), { trigger, response });
                 document.getElementById('teach-trigger').value = '';
                 document.getElementById('teach-response').value = '';
-                const status = document.getElementById('teach-status');
-                status.style.display = 'block';
-                setTimeout(() => status.style.display = 'none', 3000);
-            } catch (error) {
-                alert("Erro ao guardar na base de dados: " + error.message);
-            }
+                alert("Aprendido com sucesso!");
+            } catch (error) { alert("Erro: " + error.message); }
         };
 
-        // Logica de Chat (Consultar Firebase)
+        // SALVAR POR TEXTÃO EM MASSA
+        document.getElementById('btn-save-bulk').onclick = async () => {
+            const text = document.getElementById('teach-bulk').value;
+            if (!text.trim()) return alert("Cola o textão primeiro!");
+
+            const lines = text.split('\n');
+            let count = 0;
+
+            document.getElementById('btn-save-bulk').innerText = "A guardar...";
+
+            for (let line of lines) {
+                if (line.includes('=')) {
+                    let parts = line.split('=');
+                    let trigger = parts[0].toLowerCase().trim();
+                    let response = parts[1].trim();
+                    
+                    if (trigger && response) {
+                        try {
+                            await addDoc(collection(db, "ia_brain"), { trigger, response });
+                            count++;
+                        } catch (e) {
+                            console.error("Erro a salvar linha", e);
+                        }
+                    }
+                }
+            }
+            
+            document.getElementById('btn-save-bulk').innerText = "Aprender Tudo de Uma Vez";
+            document.getElementById('teach-bulk').value = '';
+            alert(`Fantástico! A IA aprendeu ${count} coisas novas de uma vez!`);
+        };
+
+        // LÓGICA DE RESPOSTA DA IA
         async function sendMessage() {
             const text = chatInput.value.trim();
             if (!text) return;
 
-            // Esconder o texto inicial "Olá..."
             greetingBox.style.display = 'none';
-
-            // Adicionar mensagem do User ao ecrã
             chatArea.innerHTML += `<div class="message user-msg">${text}</div>`;
             chatInput.value = '';
-            chatArea.scrollTop = chatArea.scrollHeight; // Fazer scroll para o fundo
+            chatArea.scrollTop = chatArea.scrollHeight;
 
-            // Procurar resposta no Firebase (Lógica da IA)
             try {
                 const searchLower = text.toLowerCase();
+                let foundResponse = "Desculpa, ainda não me ensinaste a responder a isso. Vai ao menu '≡' e ensina-me!";
+                
+                // 1. Verificar primeiro o Conhecimento de Fábrica
+                for (let item of baseKnowledge) {
+                    if (searchLower.includes(item.trigger)) {
+                        foundResponse = item.response;
+                    }
+                }
+
+                // 2. Verificar o Firebase (Se encontrar no Firebase, substitui o de fábrica)
                 const q = query(collection(db, "ia_brain"));
                 const querySnapshot = await getDocs(q);
                 
-                let foundResponse = "Desculpa, ainda não me ensinaste a responder a isso. Vai à aba 'Ensinar' no menu superior esquerdo (≡)!";
-                
-                // Procurar se a frase do utilizador contém a palavra-chave gravada
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
+                    // Exemplo: se o utilizador escreve "qual é o teu nome", e a palavra-chave é "nome"
                     if (searchLower.includes(data.trigger)) {
                         foundResponse = data.response;
                     }
                 });
 
-                // Simular atraso a pensar
+                // Atraso de 1 segundo para parecer que a IA está a "pensar"
                 setTimeout(() => {
                     chatArea.innerHTML += `<div class="message ai-msg">✨ ${foundResponse}</div>`;
                     chatArea.scrollTop = chatArea.scrollHeight;
-                }, 800);
+                }, 1000);
 
             } catch (error) {
-                chatArea.innerHTML += `<div class="message ai-msg">Erro ao aceder ao meu cérebro: ${error.message}</div>`;
+                chatArea.innerHTML += `<div class="message ai-msg">Erro ao pensar: ${error.message}</div>`;
             }
         }
 
-        // Enviar com botão "Enter"
-        chatInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') sendMessage();
-        });
-        
-        // Enviar clicando no ícone de enviar/microfone (para simplificar, envia o texto)
+        chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
         document.getElementById('btn-send').onclick = sendMessage;
 
     </script>
 </body>
-                                                                                                                                                                                                                    </html>
-                                                                                                                                                                                                                      
+</html>
