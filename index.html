@@ -3,61 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha IA Personalizada</title>
+    <title>Minha IA Pro</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
         
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Google Sans', sans-serif; }
-        body { background-color: #000; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: #0f0f0f; color: #ececec; height: 100vh; overflow: hidden; display: flex; }
         
-        .screen { display: none; flex-direction: column; height: 100vh; padding: 20px; }
-        .screen.active { display: flex; }
+        /* LAYOUT PRINCIPAL (PC e Mobile) */
+        .app-container { display: flex; width: 100%; height: 100%; }
+        
+        /* SIDEBAR (Menu Lateral) */
+        .sidebar { width: 260px; background: #171717; padding: 20px; display: flex; flex-direction: column; gap: 15px; border-right: 1px solid #2a2a2a; transition: 0.3s; z-index: 10; }
+        .sidebar h2 { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: #fff; }
+        .menu-btn { background: #212121; color: white; border: 1px solid #333; padding: 12px; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.2s; }
+        .menu-btn:hover { background: #2a2a2a; }
+        .menu-btn.active { background: #4285f4; border-color: #4285f4; }
+        .user-profile { margin-top: auto; display: flex; align-items: center; gap: 10px; background: #212121; padding: 10px; border-radius: 8px; cursor: pointer; }
+        .avatar { width: 35px; height: 35px; background: #6b43a4; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; }
+        
+        /* ÁREA PRINCIPAL */
+        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
+        
+        /* TELAS */
+        .screen { display: none; flex-direction: column; height: 100%; padding: 20px; overflow-y: auto; }
+        .screen.active-screen { display: flex; }
 
-        #login-screen { justify-content: center; align-items: center; gap: 20px; }
-        .login-box { background: #1e1e1e; padding: 30px; border-radius: 16px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; }
-        .login-box input { background: #333; border: none; padding: 12px; color: white; border-radius: 8px; font-size: 16px; }
-        .btn { padding: 12px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+        /* HEADER MOBILE */
+        .mobile-header { display: none; padding: 15px 20px; background: #0f0f0f; border-bottom: 1px solid #2a2a2a; align-items: center; justify-content: space-between; }
+        .hamburger { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+
+        /* TELA DE LOGIN */
+        #login-screen { justify-content: center; align-items: center; position: absolute; top: 0; left: 0; width: 100%; z-index: 50; background: #0f0f0f; }
+        .login-box { background: #171717; padding: 40px; border-radius: 16px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; border: 1px solid #2a2a2a; }
+        .login-box input { background: #0f0f0f; border: 1px solid #333; padding: 14px; color: white; border-radius: 8px; font-size: 15px; }
+        .btn { padding: 14px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: 600; transition: 0.2s; }
         .btn-primary { background: #4285f4; color: white; }
-        .btn-success { background: #34A853; color: white; margin-top: 10px;}
         .btn-google { background: white; color: black; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        
-        header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
-        header h1 { font-size: 20px; font-weight: 500; }
-        .avatar-btn { background: #6b43a4; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 16px; cursor: pointer; }
-        .menu-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+        #login-error { color: #ff4d4d; font-size: 13px; text-align: center; display: none; }
 
-        .chat-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding: 20px 0; }
-        .greeting { font-size: 32px; margin-top: 20vh; line-height: 1.2; }
-        .greeting span { color: #a8a8a8; font-size: 24px; display: block; margin-bottom: 5px; }
+        /* CHAT AREA */
+        .chat-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; }
+        .greeting { font-size: 36px; font-weight: 500; margin-top: 15vh; line-height: 1.2; text-align: center; background: -webkit-linear-gradient(#fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        .message { padding: 12px 16px; border-radius: 16px; max-width: 85%; line-height: 1.4; }
-        .user-msg { background: #303030; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .ai-msg { background: transparent; align-self: flex-start; }
-
-        .input-area { background: #1e1e1e; border-radius: 30px; padding: 10px 20px; display: flex; align-items: center; gap: 15px; margin-bottom: 10px; }
+        .message { padding: 14px 18px; border-radius: 16px; max-width: 85%; line-height: 1.5; font-size: 15px; animation: fadeIn 0.3s ease; }
+        .user-msg { background: #212121; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .ai-msg { background: transparent; align-self: flex-start; display: flex; gap: 10px; }
+        .ai-icon { font-size: 20px; }
+        
+        /* INPUT AREA */
+        .input-wrapper { padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; }
+        .input-area { background: #212121; border-radius: 30px; padding: 10px 20px; display: flex; align-items: center; gap: 15px; border: 1px solid #333; transition: 0.3s; }
+        .input-area:focus-within { border-color: #555; background: #2a2a2a; }
         .input-area input { flex: 1; background: transparent; border: none; color: white; font-size: 16px; outline: none; }
         .input-area button { background: none; border: none; color: #a8a8a8; font-size: 20px; cursor: pointer; }
-        .btn-pro { border: 1px solid #444; border-radius: 20px; padding: 4px 12px; font-size: 14px; background: transparent; color: white;}
+        .btn-send { background: #fff !important; color: #000 !important; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
-        #teach-screen { background: #000; overflow-y: auto; }
-        .teach-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .teach-form { display: flex; flex-direction: column; gap: 10px; background: #1e1e1e; padding: 20px; border-radius: 16px; margin-bottom: 20px; }
-        .teach-form label { font-size: 14px; color: #a8a8a8; }
-        .teach-form input, .teach-form textarea { background: #333; border: none; padding: 12px; color: white; border-radius: 8px; font-size: 16px; resize: vertical; }
-        
-        .divider { height: 1px; background: #333; margin: 15px 0; }
-        .help-text { font-size: 12px; color: #888; }
+        /* ENSINAR AREA */
+        .teach-form { max-width: 600px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 15px; background: #171717; padding: 25px; border-radius: 16px; border: 1px solid #2a2a2a; }
+        .teach-form label { font-size: 13px; color: #a8a8a8; text-transform: uppercase; letter-spacing: 1px; }
+        .teach-form input, .teach-form textarea { background: #0f0f0f; border: 1px solid #333; padding: 14px; color: white; border-radius: 8px; font-size: 15px; resize: vertical; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* RESPONSIVO MOBILE */
+        @media (max-width: 768px) {
+            .sidebar { position: absolute; left: -100%; height: 100%; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .sidebar.open { left: 0; }
+            .mobile-header { display: flex; }
+            .greeting { font-size: 28px; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="login-screen" class="screen active">
+    <div id="login-screen" class="screen active-screen">
         <div class="login-box">
-            <h2>Entrar na IA</h2>
+            <h2 style="text-align: center;">Minha IA</h2>
+            <p id="login-error"></p>
             <input type="email" id="email" placeholder="E-mail">
             <input type="password" id="password" placeholder="Palavra-passe">
-            <button class="btn btn-primary" id="btn-login-email">Entrar / Registar com Email</button>
-            <div style="text-align: center; color: #888;">ou</div>
+            <button class="btn btn-primary" id="btn-login-email">Entrar / Registar</button>
+            <div style="text-align: center; color: #666; font-size: 14px;">ou</div>
             <button class="btn btn-google" id="btn-login-google">
                 <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                 Entrar com Google
@@ -65,56 +92,74 @@
         </div>
     </div>
 
-    <div id="chat-screen" class="screen">
-        <header>
-            <button class="menu-btn" id="btn-open-teach">≡</button>
-            <h1>Minha IA</h1>
-            <button class="avatar-btn" id="btn-logout">V</button>
-        </header>
-
-        <div class="chat-area" id="chat-area">
-            <div class="greeting" id="greeting-box">
-                <span id="user-greeting">Olá, User</span>
-                Por onde é que começamos?
-            </div>
-        </div>
-
-        <div class="input-area">
-            <button>+</button>
-            <button style="font-size: 16px;">⎘</button>
-            <input type="text" id="chat-input" placeholder="Peça à sua IA">
-            <button class="btn-pro">Pro</button>
-            <button id="btn-send">🎤</button>
-        </div>
-    </div>
-
-    <div id="teach-screen" class="screen">
-        <div class="teach-header">
-            <h2>Ensinar a IA</h2>
-            <button class="btn btn-pro" id="btn-back-chat">Voltar ao Chat</button>
-        </div>
+    <div class="app-container">
         
-        <div class="teach-form">
-            <h3 style="font-size: 16px;">Modo 1: Uma a Uma</h3>
-            <label>Quando o utilizador disser:</label>
-            <input type="text" id="teach-trigger" placeholder="Ex: quem criou o jogo x">
-            <label>A IA deve responder:</label>
-            <textarea id="teach-response" rows="2" placeholder="Foi a empresa Y"></textarea>
-            <button class="btn btn-primary" id="btn-save-teach">Guardar no Cérebro</button>
-        </div>
+        <aside class="sidebar" id="sidebar">
+            <h2>Gestão da IA</h2>
+            <button class="menu-btn active" onclick="switchTab('chat')">💬 Conversar</button>
+            <button class="menu-btn" onclick="switchTab('teach')">🧠 Ensinar IA</button>
+            <button class="menu-btn" onclick="switchTab('bulk')">📚 Aprender Rápido (Textão)</button>
+            
+            <div class="user-profile" id="btn-logout">
+                <div class="avatar" id="user-avatar">U</div>
+                <div>
+                    <div style="font-size: 14px; color: white;" id="user-name">User</div>
+                    <div style="font-size: 12px; color: #888;">Terminar Sessão</div>
+                </div>
+            </div>
+        </aside>
 
-        <div class="teach-form">
-            <h3 style="font-size: 16px;">Modo 2: Aprender por Textão</h3>
-            <p class="help-text">Cola várias de uma vez! Regra: usa o formato <b>pergunta = resposta</b> (uma por linha).</p>
-            <textarea id="teach-bulk" rows="6" placeholder="olá = oi, como estás?&#10;quem te criou = fui criado por ti&#10;qual é a capital de portugal = lisboa"></textarea>
-            <button class="btn btn-success" id="btn-save-bulk">Aprender Tudo de Uma Vez</button>
-        </div>
+        <main class="main-content">
+            
+            <div class="mobile-header">
+                <button class="hamburger" onclick="toggleSidebar()">☰</button>
+                <h1 style="font-size: 18px; font-weight: 500;">Minha IA</h1>
+                <div style="width: 24px;"></div>
+            </div>
+
+            <div id="tab-chat" class="screen active-screen">
+                <div class="chat-area" id="chat-area">
+                    <div class="greeting" id="greeting-box">
+                        Olá <br> Por onde começamos?
+                    </div>
+                </div>
+
+                <div class="input-wrapper">
+                    <div class="input-area">
+                        <input type="text" id="chat-input" placeholder="Escreve a tua mensagem aqui...">
+                        <button class="btn-send" id="btn-send">➤</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-teach" class="screen">
+                <div class="teach-form">
+                    <h2>Ensinar nova frase</h2>
+                    <p style="color: #888; font-size: 14px;">Agora a IA é inteligente. Não precisas de escrever a frase exata. Ela vai procurar pelas palavras-chave!</p>
+                    <label>Assunto / Palavras-chave (Ex: criar universo):</label>
+                    <input type="text" id="teach-trigger" placeholder="O que o utilizador vai perguntar?">
+                    <label>A IA deve responder:</label>
+                    <textarea id="teach-response" rows="3" placeholder="A resposta detalhada da IA..."></textarea>
+                    <button class="btn btn-primary" id="btn-save-teach">Memorizar</button>
+                </div>
+            </div>
+
+            <div id="tab-bulk" class="screen">
+                <div class="teach-form">
+                    <h2>Upload de Conhecimento</h2>
+                    <p style="color: #888; font-size: 14px;">Cola várias frases. Formato obrigatório: <b>pergunta = resposta</b></p>
+                    <textarea id="teach-bulk" rows="8" placeholder="criador = Fui criada por ti&#10;quem ganhou o mundial = A Argentina ganhou em 2022"></textarea>
+                    <button class="btn" style="background: #34A853; color: white;" id="btn-save-bulk">Processar Textão</button>
+                </div>
+            </div>
+
+        </main>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, query } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCrJ47i72d-rPtvOnXc84o0Enp0zkpYv_4",
@@ -129,153 +174,168 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // CONHECIMENTO DE FÁBRICA (O que a IA já sabe nativamente sem ir ao banco de dados)
-        const baseKnowledge = [
-            { trigger: "olá", response: "Olá! Como te posso ajudar hoje?" },
-            { trigger: "oi", response: "Oi! Tudo bem contigo?" },
-            { trigger: "bom dia", response: "Bom dia! Pronto para começar?" },
-            { trigger: "quem és tu", response: "Sou a tua IA pessoal, construída por ti sem APIs de terceiros!" },
-            { trigger: "tudo bem", response: "Tudo ótimo no mundo digital! E contigo?" },
-            { trigger: "o que sabes fazer", response: "Eu aprendo contigo! Vai ao menu e ensina-me coisas novas usando o Textão!" }
-        ];
-
-        // Elementos UI
-        const loginScreen = document.getElementById('login-screen');
-        const chatScreen = document.getElementById('chat-screen');
-        const teachScreen = document.getElementById('teach-screen');
-        const chatArea = document.getElementById('chat-area');
-        const chatInput = document.getElementById('chat-input');
-        const greetingBox = document.getElementById('greeting-box');
-
-        function showScreen(screen) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            screen.classList.add('active');
+        // CONTROLO DE UI E MENUS
+        window.toggleSidebar = function() {
+            document.getElementById('sidebar').classList.toggle('open');
         }
 
-        document.getElementById('btn-open-teach').onclick = () => showScreen(teachScreen);
-        document.getElementById('btn-back-chat').onclick = () => showScreen(chatScreen);
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+            
+            if(tabName !== 'login') {
+                document.getElementById('tab-' + tabName).classList.add('active-screen');
+                event.target.classList.add('active');
+                if(window.innerWidth <= 768) toggleSidebar(); // Fecha menu no mobile ao clicar
+            } else {
+                document.getElementById('login-screen').classList.add('active-screen');
+            }
+        }
 
+        // AUTENTICAÇÃO
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                showScreen(chatScreen);
+                document.getElementById('login-screen').classList.remove('active-screen');
+                document.getElementById('tab-chat').classList.add('active-screen');
                 let nome = user.displayName || user.email.split('@')[0];
-                document.getElementById('user-greeting').innerText = `Olá, ${nome}`;
-                document.getElementById('btn-logout').innerText = nome.charAt(0).toUpperCase();
+                document.getElementById('user-name').innerText = nome;
+                document.getElementById('user-avatar').innerText = nome.charAt(0).toUpperCase();
             } else {
-                showScreen(loginScreen);
+                window.switchTab('login');
             }
         });
+
+        const errorDiv = document.getElementById('login-error');
 
         document.getElementById('btn-login-email').onclick = async () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            errorDiv.style.display = 'none';
             try { await signInWithEmailAndPassword(auth, email, password); } 
             catch {
                 try { await createUserWithEmailAndPassword(auth, email, password); } 
-                catch (err) { alert("Erro: " + err.message); }
+                catch (err) { errorDiv.innerText = err.message; errorDiv.style.display = 'block'; }
             }
         };
 
         document.getElementById('btn-login-google').onclick = async () => {
-            try { await signInWithPopup(auth, new GoogleAuthProvider()); } 
-            catch (error) { alert("Erro Google: " + error.message); }
+            errorDiv.style.display = 'none';
+            try { 
+                await signInWithPopup(auth, new GoogleAuthProvider()); 
+            } catch (error) { 
+                // MOSTRA O ERRO EXATO DO GOOGLE PARA SABERMOS O QUE FALHOU
+                errorDiv.innerHTML = `Erro Google: <b>${error.code}</b><br>Se o erro for 'unauthorized-domain', tens de adicionar o link do teu Vercel no Firebase em Authentication > Settings > Authorized domains.`; 
+                errorDiv.style.display = 'block'; 
+            }
         };
 
         document.getElementById('btn-logout').onclick = () => signOut(auth);
 
-        // SALVAR UMA A UMA
+        // SALVAR DADOS
         document.getElementById('btn-save-teach').onclick = async () => {
-            const trigger = document.getElementById('teach-trigger').value.toLowerCase().trim();
+            const trigger = document.getElementById('teach-trigger').value.trim();
             const response = document.getElementById('teach-response').value.trim();
-            if (!trigger || !response) return alert("Preenche os dois campos!");
-
+            if (!trigger || !response) return alert("Preenche tudo!");
             try {
                 await addDoc(collection(db, "ia_brain"), { trigger, response });
                 document.getElementById('teach-trigger').value = '';
                 document.getElementById('teach-response').value = '';
-                alert("Aprendido com sucesso!");
-            } catch (error) { alert("Erro: " + error.message); }
+                alert("Memorizado!");
+            } catch (err) { alert(err.message); }
         };
 
-        // SALVAR POR TEXTÃO EM MASSA
         document.getElementById('btn-save-bulk').onclick = async () => {
             const text = document.getElementById('teach-bulk').value;
-            if (!text.trim()) return alert("Cola o textão primeiro!");
-
             const lines = text.split('\n');
             let count = 0;
-
             document.getElementById('btn-save-bulk').innerText = "A guardar...";
-
             for (let line of lines) {
                 if (line.includes('=')) {
                     let parts = line.split('=');
-                    let trigger = parts[0].toLowerCase().trim();
-                    let response = parts[1].trim();
-                    
-                    if (trigger && response) {
-                        try {
-                            await addDoc(collection(db, "ia_brain"), { trigger, response });
-                            count++;
-                        } catch (e) {
-                            console.error("Erro a salvar linha", e);
-                        }
+                    if (parts[0].trim() && parts[1].trim()) {
+                        await addDoc(collection(db, "ia_brain"), { trigger: parts[0].trim(), response: parts[1].trim() });
+                        count++;
                     }
                 }
             }
-            
-            document.getElementById('btn-save-bulk').innerText = "Aprender Tudo de Uma Vez";
+            document.getElementById('btn-save-bulk').innerText = "Processar Textão";
             document.getElementById('teach-bulk').value = '';
-            alert(`Fantástico! A IA aprendeu ${count} coisas novas de uma vez!`);
+            alert(`Foram adicionadas ${count} novas memórias!`);
         };
 
-        // LÓGICA DE RESPOSTA DA IA
+        // ====== O NOVO CÉREBRO INTELIGENTE DA IA ======
+        
+        // Função para limpar palavras (tira acentos e pontuação)
+        function cleanText(text) {
+            return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[?!,.]/g, "").toLowerCase();
+        }
+
         async function sendMessage() {
+            const chatInput = document.getElementById('chat-input');
+            const chatArea = document.getElementById('chat-area');
             const text = chatInput.value.trim();
             if (!text) return;
 
-            greetingBox.style.display = 'none';
+            document.getElementById('greeting-box').style.display = 'none';
             chatArea.innerHTML += `<div class="message user-msg">${text}</div>`;
             chatInput.value = '';
             chatArea.scrollTop = chatArea.scrollHeight;
 
             try {
-                const searchLower = text.toLowerCase();
-                let foundResponse = "Desculpa, ainda não me ensinaste a responder a isso. Vai ao menu '≡' e ensina-me!";
+                // 1. Limpar e dividir a frase do utilizador em palavras
+                const userWords = cleanText(text).split(/\s+/);
                 
-                // 1. Verificar primeiro o Conhecimento de Fábrica
-                for (let item of baseKnowledge) {
-                    if (searchLower.includes(item.trigger)) {
-                        foundResponse = item.response;
-                    }
-                }
+                // 2. Ir buscar TUDO o que ela sabe ao Firebase
+                const querySnapshot = await getDocs(collection(db, "ia_brain"));
+                
+                let bestMatchResponse = "Ainda não fui treinada para entender isso. Podes usar a aba lateral para me ensinar!";
+                let highestScore = 0;
 
-                // 2. Verificar o Firebase (Se encontrar no Firebase, substitui o de fábrica)
-                const q = query(collection(db, "ia_brain"));
-                const querySnapshot = await getDocs(q);
-                
+                // 3. O Algoritmo de Inteligência: Comparar palavras
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    // Exemplo: se o utilizador escreve "qual é o teu nome", e a palavra-chave é "nome"
-                    if (searchLower.includes(data.trigger)) {
-                        foundResponse = data.response;
+                    const triggerWords = cleanText(data.trigger).split(/\s+/);
+                    
+                    let matchCount = 0;
+                    
+                    // Verifica quantas palavras do trigger o utilizador escreveu
+                    triggerWords.forEach(word => {
+                        // Só conta palavras maiores que 2 letras (ignora "o", "a", "de")
+                        if (word.length > 2 && userWords.includes(word)) {
+                            matchCount++;
+                        }
+                    });
+
+                    // Calcula a percentagem de compatibilidade
+                    let score = matchCount / triggerWords.length;
+
+                    // Se a frase ensinada tinha só 1 palavra (ex: "olá"), e coincidiu, o score é 1 (100%)
+                    if (score > highestScore && score >= 0.4) { // Precisa de pelo menos 40% de acerto
+                        highestScore = score;
+                        bestMatchResponse = data.response;
                     }
                 });
 
-                // Atraso de 1 segundo para parecer que a IA está a "pensar"
+                // Simular "A Pensar..."
+                const idDiv = "msg-" + Date.now();
+                chatArea.innerHTML += `<div class="message ai-msg" id="${idDiv}"><span class="ai-icon">✨</span><span class="text">A pensar...</span></div>`;
+                chatArea.scrollTop = chatArea.scrollHeight;
+
                 setTimeout(() => {
-                    chatArea.innerHTML += `<div class="message ai-msg">✨ ${foundResponse}</div>`;
+                    document.querySelector(`#${idDiv} .text`).innerHTML = bestMatchResponse;
                     chatArea.scrollTop = chatArea.scrollHeight;
-                }, 1000);
+                }, 800);
 
             } catch (error) {
-                chatArea.innerHTML += `<div class="message ai-msg">Erro ao pensar: ${error.message}</div>`;
+                console.error(error);
+                chatArea.innerHTML += `<div class="message ai-msg">Erro: Falha na conexão com a memória.</div>`;
             }
         }
 
-        chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+        document.getElementById('chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
         document.getElementById('btn-send').onclick = sendMessage;
 
     </script>
 </body>
-</html>
+    </html>
+    
