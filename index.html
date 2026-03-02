@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha IA Ultimate</title>
+    <title>Minha IA Ultimate V3</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap');
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background-color: #0f0f0f; color: #ececec; height: 100vh; overflow: hidden; display: flex; }
+        body { background-color: #0f0f0f; color: #ececec; height: 100vh; overflow: hidden; display: flex; transition: background-color 0.5s ease; }
         
         /* LAYOUT PRINCIPAL */
         .app-container { display: flex; width: 100%; height: 100%; }
         
         /* SIDEBAR */
-        .sidebar { width: 260px; background: #171717; padding: 20px; display: flex; flex-direction: column; gap: 15px; border-right: 1px solid #2a2a2a; transition: 0.3s; z-index: 10; }
-        .sidebar h2 { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: #fff; }
-        .menu-btn { background: #212121; color: white; border: 1px solid #333; padding: 12px; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.2s; }
-        .menu-btn:hover { background: #2a2a2a; }
+        .sidebar { width: 260px; background: rgba(23, 23, 23, 0.95); backdrop-filter: blur(10px); padding: 20px; display: flex; flex-direction: column; gap: 15px; border-right: 1px solid #2a2a2a; transition: 0.3s; z-index: 10; }
+        .sidebar h2 { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: #fff; text-align: center; }
+        .menu-btn { background: #212121; color: white; border: 1px solid #333; padding: 12px; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.2s; font-weight: 500;}
+        .menu-btn:hover { background: #2a2a2a; transform: translateX(5px); }
         .menu-btn.active { background: #4285f4; border-color: #4285f4; }
-        .user-profile { margin-top: auto; display: flex; align-items: center; gap: 10px; background: #212121; padding: 10px; border-radius: 8px; cursor: pointer; }
-        .avatar { width: 35px; height: 35px; background: #6b43a4; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; }
+        .user-profile { margin-top: auto; display: flex; align-items: center; gap: 10px; background: #212121; padding: 10px; border-radius: 8px; cursor: pointer; border: 1px solid #333; }
+        .avatar { width: 35px; height: 35px; background: linear-gradient(135deg, #6b43a4, #4285f4); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; }
         
         /* ÁREA PRINCIPAL */
         .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
@@ -30,54 +30,70 @@
         .screen.active-screen { display: flex; }
 
         /* HEADER MOBILE E VOZ */
-        .top-header { display: flex; padding: 15px 20px; background: #0f0f0f; border-bottom: 1px solid #2a2a2a; align-items: center; justify-content: space-between; }
+        .top-header { display: flex; padding: 15px 20px; background: transparent; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .hamburger { background: none; border: none; color: white; font-size: 24px; cursor: pointer; display: none; }
-        .voice-btn { background: #212121; border: 1px solid #333; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-        .voice-btn.active { background: #34A853; border-color: #34A853; }
+        .voice-btn { background: #212121; border: 1px solid #333; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; transition: 0.3s;}
+        .voice-btn.active { background: #34A853; border-color: #34A853; box-shadow: 0 0 10px rgba(52, 168, 83, 0.4); }
 
         /* TELA DE LOGIN */
         #login-screen { justify-content: center; align-items: center; position: absolute; top: 0; left: 0; width: 100%; z-index: 50; background: #0f0f0f; }
-        .login-box { background: #171717; padding: 40px; border-radius: 16px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; border: 1px solid #2a2a2a; }
-        .login-box input { background: #0f0f0f; border: 1px solid #333; padding: 14px; color: white; border-radius: 8px; font-size: 15px; }
+        .login-box { background: #171717; padding: 40px; border-radius: 16px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; border: 1px solid #2a2a2a; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .login-box input { background: #0f0f0f; border: 1px solid #333; padding: 14px; color: white; border-radius: 8px; font-size: 15px; outline: none; transition: 0.3s; }
+        .login-box input:focus { border-color: #4285f4; }
         .btn { padding: 14px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
         .btn-primary { background: #4285f4; color: white; }
         .btn-google { background: white; color: black; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        #login-error { color: #ff4d4d; font-size: 13px; text-align: center; display: none; }
+        #login-error { color: #ff4d4d; font-size: 13px; text-align: center; display: none; background: rgba(255,77,77,0.1); padding: 10px; border-radius: 8px; }
 
         /* CHAT AREA */
-        .chat-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; scroll-behavior: smooth; }
-        .greeting { font-size: 36px; font-weight: 500; margin-top: 15vh; line-height: 1.2; text-align: center; background: -webkit-linear-gradient(#fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .chat-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding: 20px; max-width: 850px; margin: 0 auto; width: 100%; scroll-behavior: smooth; }
+        .greeting { font-size: 40px; font-weight: 600; margin-top: 15vh; line-height: 1.2; text-align: center; background: linear-gradient(90deg, #4285f4, #d96570, #6b43a4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .greeting span { font-size: 20px; font-weight: 400; color: #888; display: block; margin-top: 10px; -webkit-text-fill-color: #888; }
         
-        .message { padding: 14px 18px; border-radius: 16px; max-width: 85%; line-height: 1.5; font-size: 15px; animation: fadeIn 0.3s ease; }
-        .user-msg { background: #212121; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .message { padding: 14px 18px; border-radius: 16px; max-width: 85%; line-height: 1.5; font-size: 15px; animation: slideUp 0.3s ease forwards; opacity: 0; transform: translateY(20px); }
+        .user-msg { background: #212121; align-self: flex-end; border-bottom-right-radius: 4px; border: 1px solid #333; }
         .ai-msg { background: transparent; align-self: flex-start; display: flex; flex-direction: column; gap: 10px; width: 100%; }
-        .ai-msg-content { display: flex; gap: 10px; }
+        .ai-msg-content { display: flex; gap: 12px; align-items: flex-start; }
+        .ai-icon { font-size: 22px; background: #212121; padding: 8px; border-radius: 50%; border: 1px solid #333; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex-shrink: 0; }
+        .text-content { background: #1a1a1a; padding: 14px 18px; border-radius: 16px; border-bottom-left-radius: 4px; border: 1px solid #2a2a2a; width: 100%; }
         
-        /* DESIGN DE SCRIPTS/CÓDIGO */
-        pre { background: #1e1e1e; border: 1px solid #333; padding: 15px; border-radius: 8px; overflow-x: auto; margin-top: 10px; }
+        /* SCRIPTS E CÓDIGO */
+        pre { background: #0d0d0d; border: 1px solid #333; padding: 15px; border-radius: 8px; overflow-x: auto; margin-top: 10px; margin-bottom: 5px; }
         code { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #a6accd; }
         
         /* INPUT AREA */
-        .input-wrapper { padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; }
-        .input-area { background: #212121; border-radius: 30px; padding: 10px 20px; display: flex; align-items: center; gap: 15px; border: 1px solid #333; transition: 0.3s; }
-        .input-area:focus-within { border-color: #555; background: #2a2a2a; }
+        .input-wrapper { padding: 20px; max-width: 850px; margin: 0 auto; width: 100%; }
+        .input-area { background: #1a1a1a; border-radius: 30px; padding: 8px 15px 8px 25px; display: flex; align-items: center; gap: 15px; border: 1px solid #333; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .input-area:focus-within { border-color: #6b43a4; box-shadow: 0 0 15px rgba(107, 67, 164, 0.3); }
         .input-area input { flex: 1; background: transparent; border: none; color: white; font-size: 16px; outline: none; }
-        .btn-send { background: #fff; color: #000; border: none; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .btn-send { background: white; color: black; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; transition: 0.2s; }
+        .btn-send:hover { background: #4285f4; color: white; transform: scale(1.05); }
 
         /* ENSINAR AREA */
         .teach-form { max-width: 600px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 15px; background: #171717; padding: 25px; border-radius: 16px; border: 1px solid #2a2a2a; }
-        .teach-form label { font-size: 13px; color: #a8a8a8; text-transform: uppercase; letter-spacing: 1px; }
-        .teach-form input, .teach-form textarea { background: #0f0f0f; border: 1px solid #333; padding: 14px; color: white; border-radius: 8px; font-size: 15px; resize: vertical; }
+        .teach-form label { font-size: 12px; color: #a8a8a8; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .teach-form input, .teach-form textarea { background: #0f0f0f; border: 1px solid #333; padding: 14px; color: white; border-radius: 8px; font-size: 15px; resize: vertical; outline: none; transition: 0.2s;}
+        .teach-form input:focus, .teach-form textarea:focus { border-color: #4285f4; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* ANIMAÇÃO A ESCREVER */
+        .typing-indicator { display: flex; gap: 5px; align-items: center; padding: 10px 0; }
+        .dot { width: 8px; height: 8px; background: #888; border-radius: 50%; animation: blink 1.4s infinite both; }
+        .dot:nth-child(1) { animation-delay: 0.2s; }
+        .dot:nth-child(2) { animation-delay: 0.4s; }
+        .dot:nth-child(3) { animation-delay: 0.6s; }
+
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+        @keyframes blink { 0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1.2); } }
 
         /* RESPONSIVO MOBILE */
         @media (max-width: 768px) {
-            .sidebar { position: absolute; left: -100%; height: 100%; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .sidebar { position: absolute; left: -100%; height: 100%; box-shadow: 5px 0 25px rgba(0,0,0,0.8); }
             .sidebar.open { left: 0; }
             .hamburger { display: block; }
-            .greeting { font-size: 28px; }
+            .greeting { font-size: 32px; margin-top: 10vh; }
             .message { max-width: 95%; }
+            .ai-icon { width: 30px; height: 30px; font-size: 16px; }
         }
     </style>
 </head>
@@ -85,15 +101,15 @@
 
     <div id="login-screen" class="screen active-screen">
         <div class="login-box">
-            <h2 style="text-align: center;">Minha IA</h2>
+            <h2 style="text-align: center; font-size: 24px;">Minha IA <span style="color:#4285f4">V3</span></h2>
             <p id="login-error"></p>
-            <input type="email" id="email" placeholder="E-mail">
-            <input type="password" id="password" placeholder="Palavra-passe">
+            <input type="email" id="email" placeholder="O teu E-mail">
+            <input type="password" id="password" placeholder="A tua Palavra-passe">
             <button class="btn btn-primary" id="btn-login-email">Entrar / Registar</button>
-            <div style="text-align: center; color: #666; font-size: 14px;">ou</div>
+            <div style="text-align: center; color: #666; font-size: 14px;">ou usa a tua conta</div>
             <button class="btn btn-google" id="btn-login-google">
                 <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                Entrar com Google
+                Google
             </button>
         </div>
     </div>
@@ -101,16 +117,16 @@
     <div class="app-container">
         
         <aside class="sidebar" id="sidebar">
-            <h2>Sistemas IA</h2>
+            <h2>Sistemas V3</h2>
             <button class="menu-btn active" onclick="switchTab('chat')">💬 Terminal Chat</button>
-            <button class="menu-btn" onclick="switchTab('teach')">🧠 Treinar (1 a 1)</button>
-            <button class="menu-btn" onclick="switchTab('bulk')">📚 Treinar (Textão)</button>
+            <button class="menu-btn" onclick="switchTab('teach')">🧠 Ensinar (1 a 1)</button>
+            <button class="menu-btn" onclick="switchTab('bulk')">📚 Aprender (Textão)</button>
             
             <div class="user-profile" id="btn-logout">
                 <div class="avatar" id="user-avatar">U</div>
                 <div>
-                    <div style="font-size: 14px; color: white;" id="user-name">User</div>
-                    <div style="font-size: 12px; color: #888;">Terminar Sessão</div>
+                    <div style="font-size: 14px; color: white; font-weight: 500;" id="user-name">User</div>
+                    <div style="font-size: 12px; color: #888;">Sair da Conta</div>
                 </div>
             </div>
         </aside>
@@ -119,42 +135,42 @@
             
             <div class="top-header">
                 <button class="hamburger" onclick="toggleSidebar()">☰</button>
-                <h1 style="font-size: 18px; font-weight: 500;">Minha IA</h1>
                 <button class="voice-btn" id="btn-voice">🔇 Voz Desligada</button>
             </div>
 
-            <div id="tab-chat" class="screen active-screen">
+            <div id="tab-chat" class="screen active-screen" style="padding-top: 0;">
                 <div class="chat-area" id="chat-area">
                     <div class="greeting" id="greeting-box">
-                        Sistemas Online. <br> O que vamos criar hoje?
+                        Sistemas Operacionais.
+                        <span>Pesquisa, faz contas ou usa comandos como /fundo ou /hora</span>
                     </div>
                 </div>
 
                 <div class="input-wrapper">
                     <div class="input-area">
-                        <input type="text" id="chat-input" placeholder="Pesquisa, fala ou pede 'gerar script html'...">
-                        <button class="btn-send" id="btn-send">➤</button>
+                        <input type="text" id="chat-input" placeholder="Escreve aqui a tua mensagem ou comando..." autocomplete="off">
+                        <button class="btn-send" id="btn-send">↑</button>
                     </div>
                 </div>
             </div>
 
             <div id="tab-teach" class="screen">
                 <div class="teach-form">
-                    <h2>Ensinar nova memória</h2>
-                    <label>Palavras-chave (Ex: criar universo):</label>
-                    <input type="text" id="teach-trigger" placeholder="O que o utilizador vai perguntar?">
-                    <label>Resposta da IA:</label>
-                    <textarea id="teach-response" rows="3" placeholder="A resposta detalhada da IA..."></textarea>
-                    <button class="btn btn-primary" id="btn-save-teach">Memorizar no Firebase</button>
+                    <h2 style="color: white; margin-bottom: 10px;">Ensinar Nova Memória</h2>
+                    <label>Assunto / Pergunta (Ex: cor do sol):</label>
+                    <input type="text" id="teach-trigger" placeholder="Palavras que ativam a resposta...">
+                    <label>A IA deve responder:</label>
+                    <textarea id="teach-response" rows="4" placeholder="Escreve a resposta detalhada..."></textarea>
+                    <button class="btn btn-primary" id="btn-save-teach">Memorizar na Nuvem</button>
                 </div>
             </div>
 
             <div id="tab-bulk" class="screen">
                 <div class="teach-form">
-                    <h2>Upload em Massa</h2>
-                    <p style="color: #888; font-size: 14px;">Cola várias frases. Formato: <b>pergunta = resposta</b></p>
-                    <textarea id="teach-bulk" rows="8" placeholder="criador = Fui criada por ti&#10;quem ganhou = A Argentina ganhou"></textarea>
-                    <button class="btn" style="background: #34A853; color: white;" id="btn-save-bulk">Processar Dados</button>
+                    <h2 style="color: white; margin-bottom: 10px;">Upload de Conhecimento Rápido</h2>
+                    <p style="color: #888; font-size: 13px; line-height: 1.4;">Cola várias informações de uma vez.<br>A regra de ouro é: <b>pergunta = resposta</b></p>
+                    <textarea id="teach-bulk" rows="10" placeholder="quem é o criador = Fui criada por ti&#10;qual é o meu canal = O teu canal é fantástico!"></textarea>
+                    <button class="btn" style="background: #34A853; color: white;" id="btn-save-bulk">Processar Tudo</button>
                 </div>
             </div>
 
@@ -179,7 +195,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // CONTROLO DE UI
+        // CONTROLO DE UI (Menus)
         window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('open');
         window.switchTab = (tabName) => {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
@@ -193,7 +209,7 @@
             }
         };
 
-        // SISTEMA DE VOZ (Sintetizador Web)
+        // SISTEMA DE VOZ
         let voiceEnabled = false;
         const btnVoice = document.getElementById('btn-voice');
         btnVoice.onclick = () => {
@@ -204,21 +220,20 @@
             } else {
                 btnVoice.classList.remove('active');
                 btnVoice.innerText = "🔇 Voz Desligada";
-                window.speechSynthesis.cancel(); // Pára de falar imediatamente
+                window.speechSynthesis.cancel(); 
             }
         };
 
         function speakText(text) {
             if (!voiceEnabled) return;
-            // Limpa o texto de HTML para não ler as tags em voz alta
-            const cleanText = text.replace(/<[^>]*>?/gm, ''); 
+            window.speechSynthesis.cancel(); // Para fala anterior
+            const cleanText = text.replace(/<[^>]*>?/gm, '').replace(/[*_~`]/g, ''); 
             const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.lang = 'pt-PT'; // Sotaque de Portugal
-            utterance.rate = 1.0; // Velocidade normal
+            utterance.lang = 'pt-PT';
             window.speechSynthesis.speak(utterance);
         }
 
-        // AUTENTICAÇÃO
+        // AUTENTICAÇÃO SEGURA
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('login-screen').classList.remove('active-screen');
@@ -229,101 +244,68 @@
             } else { window.switchTab('login'); }
         });
 
+        const errDiv = document.getElementById('login-error');
         document.getElementById('btn-login-email').onclick = async () => {
             const email = document.getElementById('email').value;
             const pwd = document.getElementById('password').value;
-            const errDiv = document.getElementById('login-error');
             errDiv.style.display = 'none';
             try { await signInWithEmailAndPassword(auth, email, pwd); } 
-            catch { try { await createUserWithEmailAndPassword(auth, email, pwd); } catch (e) { errDiv.innerText = e.message; errDiv.style.display = 'block'; } }
+            catch { try { await createUserWithEmailAndPassword(auth, email, pwd); } catch (e) { errDiv.innerText = "Erro: " + e.message; errDiv.style.display = 'block'; } }
         };
 
         document.getElementById('btn-login-google').onclick = async () => {
             try { await signInWithPopup(auth, new GoogleAuthProvider()); } 
-            catch (e) { document.getElementById('login-error').innerHTML = `Erro: ${e.code}`; document.getElementById('login-error').style.display = 'block'; }
+            catch (e) { errDiv.innerHTML = `Erro Google: ${e.code}<br>Lembra-te de adicionar o teu domínio no Firebase!`; errDiv.style.display = 'block'; }
         };
 
         document.getElementById('btn-logout').onclick = () => signOut(auth);
 
-        // ENSINAR DADOS
+        // ENSINAR A IA (Agora com try/catch seguro)
         document.getElementById('btn-save-teach').onclick = async () => {
             const trigger = document.getElementById('teach-trigger').value;
             const response = document.getElementById('teach-response').value;
-            if (!trigger || !response) return;
-            await addDoc(collection(db, "ia_brain"), { trigger, response });
-            document.getElementById('teach-trigger').value = ''; document.getElementById('teach-response').value = '';
-            alert("Memorizado!");
+            if (!trigger || !response) return alert("Preenche ambos os campos!");
+            try {
+                await addDoc(collection(db, "ia_brain"), { trigger, response });
+                document.getElementById('teach-trigger').value = ''; document.getElementById('teach-response').value = '';
+                alert("Guardado com sucesso!");
+            } catch(e) { alert("Erro ao guardar. Verifica as regras do Firestore: " + e.message); }
         };
 
         document.getElementById('btn-save-bulk').onclick = async () => {
             const text = document.getElementById('teach-bulk').value;
-            for (let line of text.split('\n')) {
-                if (line.includes('=')) {
-                    let parts = line.split('=');
-                    if (parts[0].trim() && parts[1].trim()) await addDoc(collection(db, "ia_brain"), { trigger: parts[0].trim(), response: parts[1].trim() });
+            if(!text) return;
+            document.getElementById('btn-save-bulk').innerText = "A guardar...";
+            try {
+                for (let line of text.split('\n')) {
+                    if (line.includes('=')) {
+                        let parts = line.split('=');
+                        if (parts[0].trim() && parts[1].trim()) await addDoc(collection(db, "ia_brain"), { trigger: parts[0].trim(), response: parts[1].trim() });
+                    }
                 }
-            }
-            document.getElementById('teach-bulk').value = '';
-            alert("Processado com sucesso!");
+                document.getElementById('teach-bulk').value = '';
+                alert("Upload completo!");
+            } catch(e) { alert("Erro durante o upload: " + e.message); }
+            document.getElementById('btn-save-bulk').innerText = "Processar Tudo";
         };
 
-        // SISTEMA PRINCIPAL DA IA (Cérebro + Gerador + Web Search)
-        function cleanString(str) { return str.normalize("NFD").replace(/[\u0300-\u036f?!,.]/g, "").toLowerCase(); }
+        // ==========================================
+        // O NOVO CÉREBRO V3 (Seguro e com Múltiplos Sistemas)
+        // ==========================================
 
-        async function sendMessage() {
-            const chatInput = document.getElementById('chat-input');
-            const chatArea = document.getElementById('chat-area');
-            const originalText = chatInput.value.trim();
-            if (!originalText) return;
+        const chatArea = document.getElementById('chat-area');
+        const chatInput = document.getElementById('chat-input');
 
+        // Função para injetar mensagens no chat (Anti-Bug de innerHTML)
+        function appendMessage(type, content, isHtml = false) {
             document.getElementById('greeting-box').style.display = 'none';
-            chatArea.innerHTML += `<div class="message user-msg">${originalText}</div>`;
-            chatInput.value = '';
-            chatArea.scrollTop = chatArea.scrollHeight;
-
-            let finalHtmlResponse = "";
-            let textToSpeak = "";
-
-            const textLower = originalText.toLowerCase();
-
-            // 1. SISTEMA GERADOR DE SCRIPTS (Interceção Direta)
-            if (textLower.includes("gerar script") || textLower.includes("criar script")) {
-                if (textLower.includes("html")) {
-                    finalHtmlResponse = `Aqui tens um script base de HTML5 estruturado:\n<pre><code>&lt;!DOCTYPE html&gt;\n&lt;html lang="pt"&gt;\n&lt;head&gt;\n    &lt;meta charset="UTF-8"&gt;\n    &lt;title&gt;Meu Site&lt;/title&gt;\n&lt;/head&gt;\n&lt;body&gt;\n    &lt;h1&gt;Olá, Mundo!&lt;/h1&gt;\n    &lt;script&gt;\n        console.log("Sistema Pronto");\n    &lt;/script&gt;\n&lt;/body&gt;\n&lt;/html&gt;</code></pre>`;
-                    textToSpeak = "Aqui tens um script base de HTML5 estruturado.";
-                } else if (textLower.includes("python")) {
-                    finalHtmlResponse = `Aqui tens um script básico em Python para um jogo de adivinhação:\n<pre><code>import random\n\nnumero = random.randint(1, 10)\npalpite = int(input("Adivinha o número de 1 a 10: "))\n\nif palpite == numero:\n    print("Parabéns, acertaste!")\nelse:\n    print(f"Erraste! O número era {numero}.")</code></pre>`;
-                    textToSpeak = "Aqui tens um script básico em Python para um jogo de adivinhação.";
-                } else if (textLower.includes("javascript") || textLower.includes("js")) {
-                    finalHtmlResponse = `Aqui tens uma função útil em JavaScript:\n<pre><code>// Função para gerar um ID único\nfunction gerarID() {\n    return Math.random().toString(36).substr(2, 9);\n}\n\nconsole.log("O teu novo ID é: " + gerarID());</code></pre>`;
-                    textToSpeak = "Aqui tens uma função útil em JavaScript para gerar identificadores únicos.";
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${type}`;
+            
+            if (type === 'user-msg') {
+                msgDiv.innerText = content;
+            } else {
+                if (isHtml) {
+                    msgDiv.innerHTML = `<div class="ai-msg-content"><span class="ai-icon">✨</span><div class="text-content">${content}</div></div>`;
                 } else {
-                    finalHtmlResponse = "Consigo gerar scripts de HTML, Python e JavaScript. Qual preferes?";
-                    textToSpeak = finalHtmlResponse;
-                }
-            } 
-            else {
-                // 2. PROCURAR NO CÉREBRO (Firebase)
-                const userWords = cleanString(originalText).split(/\s+/);
-                const querySnapshot = await getDocs(collection(db, "ia_brain"));
-                
-                let highestScore = 0;
-                let bestMatchResponse = "";
-
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const triggerWords = cleanString(data.trigger).split(/\s+/);
-                    let matchCount = 0;
-                    triggerWords.forEach(word => { if (word.length > 2 && userWords.includes(word)) matchCount++; });
-                    let score = matchCount / triggerWords.length;
-                    if (score > highestScore && score >= 0.4) {
-                        highestScore = score;
-                        bestMatchResponse = data.response;
-                    }
-                });
-
-                if (highestScore >= 0.4) {
-                    finalHtmlResponse = bestMatchResponse;
-                    textToSpeak = bestMatchResponse;
-                } else {
-                 
+                    msgDiv.innerHTML = `<div class="ai-msg-content"><span class="ai-icon">✨</span><div class="text-content"></div></di
