@@ -4,13 +4,18 @@ export default async function handler(req, res) {
       return res.status(405).json({ reply: "Method not allowed" });
     }
 
-    const { message } = req.body;
+    const { message } = req.body || {};
 
     if (!message) {
       return res.status(400).json({ reply: "Mensagem vazia." });
     }
 
-    const response = await fetch(
+    if (!process.env.OPENAI_API_KEY) {
+      console.error("SEM API KEY");
+      return res.status(500).json({ reply: "API key não configurada." });
+    }
+
+    const openaiRes = await fetch(
       "https://api.openai.com/v1/chat/completions",
       {
         method: "POST",
@@ -35,10 +40,9 @@ export default async function handler(req, res) {
       }
     );
 
-    const data = await response.json();
+    const data = await openaiRes.json();
 
-    // 🔥 DEBUG IMPORTANTE
-    if (!response.ok) {
+    if (!openaiRes.ok) {
       console.error("OpenAI error:", data);
       return res.status(500).json({ reply: "Erro na IA." });
     }
@@ -48,7 +52,7 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error("Server error:", err);
+    console.error("Server crash:", err);
     return res.status(500).json({ reply: "Erro na IA." });
   }
 }
