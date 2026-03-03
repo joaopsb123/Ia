@@ -1,154 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minha IA Ultimate V4</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif}
+
+body{
+background:#0f0f0f;
+color:#ececec;
+height:100vh;
+display:flex;
+overflow:hidden;
+}
+
+/* LOGIN */
+.screen{display:none}
+.active-screen{display:flex}
+
+#login-screen{
+position:absolute;
+inset:0;
+justify-content:center;
+align-items:center;
+background:#0f0f0f;
+z-index:50;
+}
+
+.login-box{
+background:#171717;
+padding:40px;
+border-radius:16px;
+width:100%;
+max-width:400px;
+display:flex;
+flex-direction:column;
+gap:15px;
+border:1px solid #2a2a2a;
+}
+
+.login-box input{
+background:#0f0f0f;
+border:1px solid #333;
+padding:14px;
+color:white;
+border-radius:8px;
+}
+
+.btn{
+padding:14px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-weight:600;
+}
+
+.btn-primary{background:#4285f4;color:white}
+.btn-google{background:white;color:black}
+
+#login-error{
+color:#ff4d4d;
+font-size:13px;
+text-align:center;
+display:none;
+}
+
+/* APP */
+.app-container{display:flex;width:100%;height:100%}
+
+.sidebar{
+width:240px;
+background:#171717;
+padding:20px;
+border-right:1px solid #2a2a2a;
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+.menu-btn{
+background:#212121;
+color:white;
+border:1px solid #333;
+padding:10px;
+border-radius:8px;
+cursor:pointer;
+}
+
+.menu-btn.active{background:#4285f4}
+
+.user-profile{
+margin-top:auto;
+background:#212121;
+padding:10px;
+border-radius:8px;
+cursor:pointer;
+display:flex;
+gap:10px;
+align-items:center;
+}
+
+.avatar{
+width:35px;height:35px;border-radius:50%;
+background:#4285f4;
+display:flex;align-items:center;justify-content:center;
+font-weight:bold;
+}
+
+.main-content{flex:1;display:flex;flex-direction:column}
+
+.chat-area{
+flex:1;
+overflow:auto;
+padding:20px;
+max-width:900px;
+margin:0 auto;
+width:100%;
+}
+
+.input-wrapper{padding:15px}
+
+.input-area{
+background:#1a1a1a;
+border-radius:30px;
+padding:10px 20px;
+display:flex;
+gap:10px;
+border:1px solid #333;
+}
+
+.input-area input{
+flex:1;
+background:transparent;
+border:none;
+color:white;
+outline:none;
+}
+
+.btn-send{
+background:white;
+border:none;
+width:40px;height:40px;
+border-radius:50%;
+cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen" class="screen active-screen">
+<div class="login-box">
+<h2 style="text-align:center">Minha IA <span style="color:#34A853">V4</span></h2>
+<p id="login-error"></p>
+<input type="email" id="email" placeholder="O teu E-mail">
+<input type="password" id="password" placeholder="A tua Palavra-passe">
+<button class="btn btn-primary" id="btn-login-email">Entrar / Registar</button>
+<button class="btn btn-google" id="btn-login-google">Google Login</button>
+</div>
+</div>
+
+<div class="app-container">
+
+<aside class="sidebar">
+<button class="menu-btn active">💬 Chat</button>
+
+<div class="user-profile" id="btn-logout">
+<div class="avatar" id="user-avatar">U</div>
+<div>
+<div id="user-name">User</div>
+<div style="font-size:12px;color:#888">Sair</div>
+</div>
+</div>
+</aside>
+
+<main class="main-content">
+<div id="tab-chat" class="screen active-screen" style="flex:1;flex-direction:column">
+
+<div class="chat-area" id="chat-area">
+<h2>Sistema pronto 🚀</h2>
+</div>
+
+<div class="input-wrapper">
+<div class="input-area">
+<input id="chat-input" placeholder="Escreve algo...">
+<button class="btn-send">↑</button>
+</div>
+</div>
+
+</div>
+</main>
+</div>
+
+<!-- FIREBASE SCRIPT -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
-import {
-  getAuth,
-  signInWithRedirect,
-  getRedirectResult,
-  GoogleAuthProvider,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import {
-  getFirestore,
-  collection,
-  addDoc
-} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider,
+signInWithEmailAndPassword, createUserWithEmailAndPassword,
+onAuthStateChanged, signOut } from
+"https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-// =========================
-// FIREBASE CONFIG
-// =========================
+import { getFirestore } from
+"https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+/* CONFIG */
 const firebaseConfig = {
-  apiKey: "AIzaSyCrJ47i72d-rPtvOnXc84o0Enp0zkpYv_4",
-  authDomain: "ia-123-a8ea8.firebaseapp.com",
-  projectId: "ia-123-a8ea8",
-  storageBucket: "ia-123-a8ea8.firebasestorage.app",
-  messagingSenderId: "232554388490",
-  appId: "1:232554388490:web:2ad57cab51484837f593f3",
-  measurementId: "G-2PM2X2JVGT"
+apiKey: "AIzaSyCrJ47i72d-rPtvOnXc84o0Enp0zkpYv_4",
+authDomain: "ia-123-a8ea8.firebaseapp.com",
+projectId: "ia-123-a8ea8",
+storageBucket: "ia-123-a8ea8.firebasestorage.app",
+messagingSenderId: "232554388490",
+appId: "1:232554388490:web:2ad57cab51484837f593f3"
 };
 
 const app = initializeApp(firebaseConfig);
-getAnalytics(app);
-
 const auth = getAuth(app);
-const db = getFirestore(app);
+getFirestore(app);
 
 const errDiv = document.getElementById('login-error');
 
-// =========================
-// GOOGLE REDIRECT CHECK
-// =========================
-getRedirectResult(auth).catch((error) => {
-  errDiv.innerHTML = `❌ Erro Google:<br>${error.code}`;
-  errDiv.style.display = 'block';
+/* REDIRECT GOOGLE */
+getRedirectResult(auth).catch(err=>{
+errDiv.innerHTML="❌ "+err.code;
+errDiv.style.display='block';
 });
 
-// =========================
-// OBSERVADOR DE LOGIN
-// =========================
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    document.getElementById('login-screen').classList.remove('active-screen');
-    document.getElementById('tab-chat').classList.add('active-screen');
+/* OBSERVADOR */
+onAuthStateChanged(auth,user=>{
+if(user){
+document.getElementById('login-screen').classList.remove('active-screen');
+document.getElementById('tab-chat').classList.add('active-screen');
 
-    const nome = user.displayName || user.email.split('@')[0];
-    document.getElementById('user-name').innerText = nome;
-    document.getElementById('user-avatar').innerText = nome.charAt(0).toUpperCase();
-  } else {
-    window.switchTab('login');
-  }
+const nome=user.displayName||user.email.split('@')[0];
+document.getElementById('user-name').innerText=nome;
+document.getElementById('user-avatar').innerText=nome[0].toUpperCase();
+}else{
+document.getElementById('login-screen').classList.add('active-screen');
+}
 });
 
-// =========================
-// LOGIN EMAIL / REGISTO AUTO
-// =========================
-document.getElementById('btn-login-email').onclick = async () => {
-  const email = document.getElementById('email').value.trim();
-  const pwd = document.getElementById('password').value.trim();
+/* EMAIL LOGIN */
+document.getElementById('btn-login-email').onclick=async()=>{
+const email=emailInput.value.trim();
+const pwd=password.value.trim();
 
-  if (!email || !pwd) {
-    errDiv.innerHTML = "⚠️ Escreve um email e uma palavra-passe!";
-    errDiv.style.display = 'block';
-    return;
-  }
+if(!email||!pwd){
+errDiv.innerHTML="⚠️ Preenche tudo";
+errDiv.style.display='block';
+return;
+}
 
-  errDiv.style.display = 'none';
-  const btn = document.getElementById('btn-login-email');
-  btn.innerText = "A carregar...";
-
-  try {
-    await signInWithEmailAndPassword(auth, email, pwd);
-  } catch (error) {
-    if (
-      error.code === 'auth/user-not-found' ||
-      error.code === 'auth/invalid-credential' ||
-      error.code === 'auth/invalid-login-credentials'
-    ) {
-      try {
-        await createUserWithEmailAndPassword(auth, email, pwd);
-      } catch (errRegisto) {
-        errDiv.innerHTML = `❌ Erro ao registar:<br>${errRegisto.code}`;
-        errDiv.style.display = 'block';
-      }
-    } else {
-      errDiv.innerHTML = `❌ Erro de login:<br>${error.code}`;
-      errDiv.style.display = 'block';
-    }
-  }
-
-  btn.innerText = "Entrar / Registar";
+try{
+await signInWithEmailAndPassword(auth,email,pwd);
+}catch(e){
+try{
+await createUserWithEmailAndPassword(auth,email,pwd);
+}catch(err){
+errDiv.innerHTML="❌ "+err.code;
+errDiv.style.display='block';
+}
+}
 };
 
-// =========================
-// LOGIN GOOGLE
-// =========================
-document.getElementById('btn-login-google').onclick = async () => {
-  errDiv.style.display = 'none';
-
-  const btn = document.getElementById('btn-login-google');
-  btn.innerText = "A redirecionar...";
-
-  const provider = new GoogleAuthProvider();
-
-  try {
-    await signInWithRedirect(auth, provider);
-  } catch (error) {
-    errDiv.innerHTML = `❌ Erro ao abrir Google:<br>${error.code}`;
-    errDiv.style.display = 'block';
-    btn.innerText = "Google (Login Seguro)";
-  }
+/* GOOGLE */
+document.getElementById('btn-login-google').onclick=()=>{
+const provider=new GoogleAuthProvider();
+signInWithRedirect(auth,provider);
 };
 
-// =========================
-// LOGOUT
-// =========================
-document.getElementById('btn-logout').onclick = () => signOut(auth);
+/* LOGOUT */
+document.getElementById('btn-logout').onclick=()=>signOut(auth);
+</script>
 
-// =========================
-// ENSINAR IA
-// =========================
-document.getElementById('btn-save-teach').onclick = async () => {
-  const t = document.getElementById('teach-trigger').value;
-  const r = document.getElementById('teach-response').value;
-
-  if (!t || !r) {
-    alert("Preenche todos os campos!");
-    return;
-  }
-
-  try {
-    await addDoc(collection(db, "ia_brain"), {
-      trigger: t,
-      response: r
-    });
-
-    alert("✅ Memória Guardada!");
-  } catch (e) {
-    alert("❌ Erro ao guardar!");
-    console.error(e);
-  }
-};
-        </script>
+</body>
+</html>
