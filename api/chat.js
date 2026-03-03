@@ -10,21 +10,21 @@ export default async function handler(req, res) {
       return res.status(400).json({ reply: "Mensagem vazia." });
     }
 
-    if (!process.env.OPENAI_API_KEY) {
-      console.error("SEM API KEY");
-      return res.status(500).json({ reply: "API key não configurada." });
+    if (!process.env.GROQ_API_KEY) {
+      console.error("SEM GROQ API KEY");
+      return res.status(500).json({ reply: "API não configurada." });
     }
 
-    const openaiRes = await fetch(
-      "https://api.openai.com/v1/chat/completions",
+    const groqRes = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
+          model: "llama-3.1-8b-instant",
           messages: [
             {
               role: "system",
@@ -40,10 +40,10 @@ export default async function handler(req, res) {
       }
     );
 
-    const data = await openaiRes.json();
+    const data = await groqRes.json();
 
-    if (!openaiRes.ok) {
-      console.error("OpenAI error:", data);
+    if (!groqRes.ok) {
+      console.error("Groq error:", data);
       return res.status(500).json({ reply: "Erro na IA." });
     }
 
