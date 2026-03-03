@@ -15,22 +15,27 @@ export default async function handler(req) {
           Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "llama3-70b-8192",
+          model: "llama-3.1-8b-instant",
           messages,
           stream: true,
         }),
       }
     );
 
+    if (!response.ok) {
+      const text = await response.text();
+      return new Response(text, { status: 500 });
+    }
+
+    // 🔥 PASSA O STREAM DIRETO (CORRETO PARA VERCEL)
     return new Response(response.body, {
       headers: {
         "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
       },
     });
   } catch (err) {
-    return new Response(
-      JSON.stringify({ reply: "Erro na IA." }),
-      { status: 500 }
-    );
+    return new Response("Erro na IA", { status: 500 });
   }
 }
