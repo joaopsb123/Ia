@@ -1,6 +1,14 @@
 export default async function handler(req, res) {
   try {
+    if (req.method !== "POST") {
+      return res.status(405).json({ reply: "Method not allowed" });
+    }
+
     const { message } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ reply: "Mensagem vazia." });
+    }
 
     const response = await fetch(
       "https://api.openai.com/v1/chat/completions",
@@ -13,8 +21,14 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           model: "gpt-4o-mini",
           messages: [
-            { role: "system", content: "Responde em português de forma amigável." },
-            { role: "user", content: message }
+            {
+              role: "system",
+              content: "Responde em português de forma amigável."
+            },
+            {
+              role: "user",
+              content: message
+            }
           ],
           temperature: 0.7
         }),
@@ -22,9 +36,19 @@ export default async function handler(req, res) {
     );
 
     const data = await response.json();
-    res.status(200).json({ reply: data.choices[0].message.content });
+
+    // 🔥 DEBUG IMPORTANTE
+    if (!response.ok) {
+      console.error("OpenAI error:", data);
+      return res.status(500).json({ reply: "Erro na IA." });
+    }
+
+    return res.status(200).json({
+      reply: data.choices?.[0]?.message?.content || "Sem resposta."
+    });
 
   } catch (err) {
-    res.status(500).json({ reply: "Erro na IA." });
+    console.error("Server error:", err);
+    return res.status(500).json({ reply: "Erro na IA." });
   }
 }
