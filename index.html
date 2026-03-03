@@ -1,309 +1,154 @@
-<!DOCTYPE html>
-<html lang="pt-PT">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha IA Ultimate V4</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap');
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background-color: #0f0f0f; color: #ececec; height: 100vh; overflow: hidden; display: flex; transition: background-color 0.5s ease; }
-        
-        .app-container { display: flex; width: 100%; height: 100%; }
-        
-        /* BARRA LATERAL */
-        .sidebar { width: 260px; background: rgba(23, 23, 23, 0.95); backdrop-filter: blur(10px); padding: 20px; display: flex; flex-direction: column; gap: 15px; border-right: 1px solid #2a2a2a; transition: 0.3s; z-index: 10; }
-        .sidebar h2 { font-size: 18px; font-weight: 600; margin-bottom: 5px; color: #fff; text-align: center; }
-        .system-list { font-size: 11px; color: #34A853; text-align: center; margin-bottom: 15px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
-        
-        .menu-btn { background: #212121; color: white; border: 1px solid #333; padding: 12px; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.2s; font-weight: 500;}
-        .menu-btn:hover { background: #2a2a2a; transform: translateX(5px); }
-        .menu-btn.active { background: #4285f4; border-color: #4285f4; }
-        .user-profile { margin-top: auto; display: flex; align-items: center; gap: 10px; background: #212121; padding: 10px; border-radius: 8px; cursor: pointer; border: 1px solid #333; }
-        .avatar { width: 35px; height: 35px; background: linear-gradient(135deg, #6b43a4, #4285f4); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; }
-        
-        /* CONTEÚDO PRINCIPAL */
-        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
-        .screen { display: none; flex-direction: column; height: 100%; padding: 20px; overflow-y: auto; }
-        .screen.active-screen { display: flex; }
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
+import {
+  getAuth,
+  signInWithRedirect,
+  getRedirectResult,
+  GoogleAuthProvider,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  addDoc
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        .top-header { display: flex; padding: 15px 20px; background: transparent; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .hamburger { background: none; border: none; color: white; font-size: 24px; cursor: pointer; display: none; }
-        .voice-btn { background: #212121; border: 1px solid #333; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; transition: 0.3s;}
-        .voice-btn.active { background: #34A853; border-color: #34A853; box-shadow: 0 0 10px rgba(52, 168, 83, 0.4); }
+// =========================
+// FIREBASE CONFIG
+// =========================
+const firebaseConfig = {
+  apiKey: "AIzaSyCrJ47i72d-rPtvOnXc84o0Enp0zkpYv_4",
+  authDomain: "ia-123-a8ea8.firebaseapp.com",
+  projectId: "ia-123-a8ea8",
+  storageBucket: "ia-123-a8ea8.firebasestorage.app",
+  messagingSenderId: "232554388490",
+  appId: "1:232554388490:web:2ad57cab51484837f593f3",
+  measurementId: "G-2PM2X2JVGT"
+};
 
-        /* TELA DE LOGIN */
-        #login-screen { justify-content: center; align-items: center; position: absolute; top: 0; left: 0; width: 100%; z-index: 50; background: #0f0f0f; }
-        .login-box { background: #171717; padding: 40px; border-radius: 16px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; border: 1px solid #2a2a2a; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .login-box input { background: #0f0f0f; border: 1px solid #333; padding: 14px; color: white; border-radius: 8px; font-size: 15px; outline: none; transition: 0.3s; }
-        .login-box input:focus { border-color: #4285f4; }
-        .btn { padding: 14px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
-        .btn-primary { background: #4285f4; color: white; }
-        .btn-google { background: white; color: black; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        #login-error { color: #ff4d4d; font-size: 13px; text-align: center; display: none; background: rgba(255,77,77,0.1); padding: 10px; border-radius: 8px; line-height: 1.4; }
+const app = initializeApp(firebaseConfig);
+getAnalytics(app);
 
-        /* CHAT AREA */
-        .chat-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding: 20px; max-width: 850px; margin: 0 auto; width: 100%; scroll-behavior: smooth; }
-        .greeting { font-size: 40px; font-weight: 600; margin-top: 15vh; line-height: 1.2; text-align: center; background: linear-gradient(90deg, #4285f4, #34A853, #6b43a4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .greeting span { font-size: 18px; font-weight: 400; color: #888; display: block; margin-top: 10px; -webkit-text-fill-color: #888; }
-        
-        .message { padding: 14px 18px; border-radius: 16px; max-width: 85%; line-height: 1.5; font-size: 15px; animation: slideUp 0.3s ease forwards; opacity: 0; transform: translateY(20px); }
-        .user-msg { background: #212121; align-self: flex-end; border-bottom-right-radius: 4px; border: 1px solid #333; }
-        .ai-msg { background: transparent; align-self: flex-start; display: flex; flex-direction: column; gap: 10px; width: 100%; }
-        .ai-msg-content { display: flex; gap: 12px; align-items: flex-start; }
-        .ai-icon { font-size: 22px; background: #212121; padding: 8px; border-radius: 50%; border: 1px solid #333; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex-shrink: 0; }
-        .text-content { background: #1a1a1a; padding: 14px 18px; border-radius: 16px; border-bottom-left-radius: 4px; border: 1px solid #2a2a2a; width: 100%; }
-        
-        /* IMAGENS E CÓDIGO NO CHAT */
-        .chat-image { max-width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid #333; display: block; }
-        pre { background: #0d0d0d; border: 1px solid #333; padding: 15px; border-radius: 8px; overflow-x: auto; margin-top: 10px; margin-bottom: 5px; }
-        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #a6accd; }
-        
-        /* INPUT DA MENSAGEM */
-        .input-wrapper { padding: 20px; max-width: 850px; margin: 0 auto; width: 100%; }
-        .input-area { background: #1a1a1a; border-radius: 30px; padding: 8px 15px 8px 25px; display: flex; align-items: center; gap: 15px; border: 1px solid #333; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .input-area:focus-within { border-color: #34A853; box-shadow: 0 0 15px rgba(52, 168, 83, 0.3); }
-        .input-area input { flex: 1; background: transparent; border: none; color: white; font-size: 16px; outline: none; }
-        .btn-send { background: white; color: black; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; transition: 0.2s; }
-        .btn-send:hover { background: #34A853; color: white; transform: scale(1.05); }
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-        /* FORMULÁRIOS DE ENSINAR */
-        .teach-form { max-width: 600px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 15px; background: #171717; padding: 25px; border-radius: 16px; border: 1px solid #2a2a2a; }
-        .teach-form label { font-size: 12px; color: #a8a8a8; text-transform: uppercase; font-weight: 600; }
-        .teach-form input, .teach-form textarea { background: #0f0f0f; border: 1px solid #333; padding: 14px; color: white; border-radius: 8px; font-size: 15px; resize: vertical; outline: none; }
-        .teach-form input:focus, .teach-form textarea:focus { border-color: #4285f4; }
+const errDiv = document.getElementById('login-error');
 
-        /* ANIMAÇÃO "A ESCREVER" */
-        .typing-indicator { display: flex; gap: 5px; align-items: center; padding: 10px 0; }
-        .dot { width: 8px; height: 8px; background: #888; border-radius: 50%; animation: blink 1.4s infinite both; }
-        .dot:nth-child(1) { animation-delay: 0.2s; } .dot:nth-child(2) { animation-delay: 0.4s; } .dot:nth-child(3) { animation-delay: 0.6s; }
+// =========================
+// GOOGLE REDIRECT CHECK
+// =========================
+getRedirectResult(auth).catch((error) => {
+  errDiv.innerHTML = `❌ Erro Google:<br>${error.code}`;
+  errDiv.style.display = 'block';
+});
 
-        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
-        @keyframes blink { 0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1.2); } }
+// =========================
+// OBSERVADOR DE LOGIN
+// =========================
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    document.getElementById('login-screen').classList.remove('active-screen');
+    document.getElementById('tab-chat').classList.add('active-screen');
 
-        /* RESPONSIVO MOBILE */
-        @media (max-width: 768px) {
-            .sidebar { position: absolute; left: -100%; height: 100%; box-shadow: 5px 0 25px rgba(0,0,0,0.8); }
-            .sidebar.open { left: 0; }
-            .hamburger { display: block; }
-            .greeting { font-size: 30px; margin-top: 10vh; }
-            .message { max-width: 95%; }
-        }
-    </style>
-</head>
-<body>
+    const nome = user.displayName || user.email.split('@')[0];
+    document.getElementById('user-name').innerText = nome;
+    document.getElementById('user-avatar').innerText = nome.charAt(0).toUpperCase();
+  } else {
+    window.switchTab('login');
+  }
+});
 
-    <div id="login-screen" class="screen active-screen">
-        <div class="login-box">
-            <h2 style="text-align: center; font-size: 24px;">Minha IA <span style="color:#34A853">V4</span></h2>
-            <p id="login-error"></p>
-            <input type="email" id="email" placeholder="O teu E-mail">
-            <input type="password" id="password" placeholder="A tua Palavra-passe">
-            <button class="btn btn-primary" id="btn-login-email">Entrar / Registar</button>
-            <div style="text-align: center; color: #666; font-size: 14px;">ou usa a tua conta</div>
-            <button class="btn btn-google" id="btn-login-google">
-                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                Google (Login Seguro)
-            </button>
-        </div>
-    </div>
+// =========================
+// LOGIN EMAIL / REGISTO AUTO
+// =========================
+document.getElementById('btn-login-email').onclick = async () => {
+  const email = document.getElementById('email').value.trim();
+  const pwd = document.getElementById('password').value.trim();
 
-    <div class="app-container">
-        <aside class="sidebar" id="sidebar">
-            <h2>Sistemas V4</h2>
-            <div class="system-list">☁️ Meteorologia | 💱 Moedas<br>📸 Imagens | 📝 Lembretes</div>
-            
-            <button class="menu-btn active" onclick="switchTab('chat')">💬 Terminal Chat</button>
-            <button class="menu-btn" onclick="switchTab('teach')">🧠 Ensinar (1 a 1)</button>
-            <button class="menu-btn" onclick="switchTab('bulk')">📚 Aprender (Textão)</button>
-            
-            <div class="user-profile" id="btn-logout">
-                <div class="avatar" id="user-avatar">U</div>
-                <div>
-                    <div style="font-size: 14px; color: white; font-weight: 500;" id="user-name">User</div>
-                    <div style="font-size: 12px; color: #888;">Sair da Conta</div>
-                </div>
-            </div>
-        </aside>
+  if (!email || !pwd) {
+    errDiv.innerHTML = "⚠️ Escreve um email e uma palavra-passe!";
+    errDiv.style.display = 'block';
+    return;
+  }
 
-        <main class="main-content">
-            <div class="top-header">
-                <button class="hamburger" onclick="toggleSidebar()">☰</button>
-                <button class="voice-btn" id="btn-voice">🔇 Voz Desligada</button>
-            </div>
+  errDiv.style.display = 'none';
+  const btn = document.getElementById('btn-login-email');
+  btn.innerText = "A carregar...";
 
-            <div id="tab-chat" class="screen active-screen" style="padding-top: 0;">
-                <div class="chat-area" id="chat-area">
-                    <div class="greeting" id="greeting-box">
-                        Sistemas Multi-Ferramenta Ativos.
-                        <span>Ex: "tempo em lisboa" | "converter 10 eur para usd" | "lembrar de estudar" | "mostrar imagem de carro"</span>
-                    </div>
-                </div>
+  try {
+    await signInWithEmailAndPassword(auth, email, pwd);
+  } catch (error) {
+    if (
+      error.code === 'auth/user-not-found' ||
+      error.code === 'auth/invalid-credential' ||
+      error.code === 'auth/invalid-login-credentials'
+    ) {
+      try {
+        await createUserWithEmailAndPassword(auth, email, pwd);
+      } catch (errRegisto) {
+        errDiv.innerHTML = `❌ Erro ao registar:<br>${errRegisto.code}`;
+        errDiv.style.display = 'block';
+      }
+    } else {
+      errDiv.innerHTML = `❌ Erro de login:<br>${error.code}`;
+      errDiv.style.display = 'block';
+    }
+  }
 
-                <div class="input-wrapper">
-                    <div class="input-area">
-                        <input type="text" id="chat-input" placeholder="Pede-me qualquer coisa..." autocomplete="off">
-                        <button class="btn-send" id="btn-send">↑</button>
-                    </div>
-                </div>
-            </div>
+  btn.innerText = "Entrar / Registar";
+};
 
-            <div id="tab-teach" class="screen">
-                <div class="teach-form">
-                    <h2 style="color: white; margin-bottom: 10px;">Ensinar Nova Memória</h2>
-                    <label>Assunto / Pergunta:</label>
-                    <input type="text" id="teach-trigger" placeholder="Ex: criador do jogo">
-                    <label>A IA deve responder:</label>
-                    <textarea id="teach-response" rows="4" placeholder="Resposta detalhada..."></textarea>
-                    <button class="btn btn-primary" id="btn-save-teach">Memorizar na Nuvem</button>
-                </div>
-            </div>
+// =========================
+// LOGIN GOOGLE
+// =========================
+document.getElementById('btn-login-google').onclick = async () => {
+  errDiv.style.display = 'none';
 
-            <div id="tab-bulk" class="screen">
-                <div class="teach-form">
-                    <h2 style="color: white; margin-bottom: 10px;">Upload de Conhecimento Rápido</h2>
-                    <textarea id="teach-bulk" rows="10" placeholder="pergunta = resposta&#10;o que é css = Serve para dar estilo aos sites."></textarea>
-                    <button class="btn" style="background: #34A853; color: white;" id="btn-save-bulk">Processar Tudo</button>
-                </div>
-            </div>
-        </main>
-    </div>
+  const btn = document.getElementById('btn-login-google');
+  btn.innerText = "A redirecionar...";
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  const provider = new GoogleAuthProvider();
 
-        // SISTEMA DE ERROS VISÍVEIS
-        const errDiv = document.getElementById('login-error');
-        window.onerror = function(msg, src, lineno) {
-            errDiv.innerHTML = `⚠️ Bug no código (Linha ${lineno}): ${msg}`;
-            errDiv.style.display = 'block';
-            return true;
-        };
+  try {
+    await signInWithRedirect(auth, provider);
+  } catch (error) {
+    errDiv.innerHTML = `❌ Erro ao abrir Google:<br>${error.code}`;
+    errDiv.style.display = 'block';
+    btn.innerText = "Google (Login Seguro)";
+  }
+};
 
-        // CONFIGURAÇÃO DO TEU FIREBASE
-        const firebaseConfig = {
-            apiKey: "AIzaSyCrJ47i72d-rPtvOnXc84o0Enp0zkpYv_4",
-            authDomain: "ia-123-a8ea8.firebaseapp.com",
-            projectId: "ia-123-a8ea8",
-            storageBucket: "ia-123-a8ea8.firebasestorage.app",
-            messagingSenderId: "232554388490",
-            appId: "1:232554388490:web:2ad57cab51484837f593f3",
-            measurementId: "G-2PM2X2JVGT"
-        };
+// =========================
+// LOGOUT
+// =========================
+document.getElementById('btn-logout').onclick = () => signOut(auth);
 
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+// =========================
+// ENSINAR IA
+// =========================
+document.getElementById('btn-save-teach').onclick = async () => {
+  const t = document.getElementById('teach-trigger').value;
+  const r = document.getElementById('teach-response').value;
 
-        // NAVEGAÇÃO E UI
-        window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('open');
-        window.switchTab = (t) => {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-            document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
-            if(t !== 'login') {
-                document.getElementById('tab-' + t).classList.add('active-screen');
-                const btn = Array.from(document.querySelectorAll('.menu-btn')).find(b => b.getAttribute('onclick').includes(t));
-                if(btn) btn.classList.add('active');
-                if(window.innerWidth <= 768) toggleSidebar();
-            } else { document.getElementById('login-screen').classList.add('active-screen'); }
-        };
+  if (!t || !r) {
+    alert("Preenche todos os campos!");
+    return;
+  }
 
-        // SISTEMA DE VOZ
-        let voiceEnabled = false;
-        const btnVoice = document.getElementById('btn-voice');
-        btnVoice.onclick = () => {
-            voiceEnabled = !voiceEnabled;
-            btnVoice.classList.toggle('active');
-            btnVoice.innerText = voiceEnabled ? "🔊 Voz Ligada" : "🔇 Voz Desligada";
-            if (!voiceEnabled) window.speechSynthesis.cancel(); 
-        };
+  try {
+    await addDoc(collection(db, "ia_brain"), {
+      trigger: t,
+      response: r
+    });
 
-        function speakText(text) {
-            if (!voiceEnabled) return;
-            window.speechSynthesis.cancel();
-            const cleanText = text.replace(/<[^>]*>?/gm, '').replace(/[*_~`]/g, ''); 
-            const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.lang = 'pt-PT';
-            window.speechSynthesis.speak(utterance);
-        }
-
-        // ==========================================
-        // LOGIN SEGURO E CORRIGIDO
-        // ==========================================
-
-        // Verifica erros vindos do Google
-        getRedirectResult(auth).catch((error) => {
-            errDiv.innerHTML = `❌ Erro Google:<br>${error.code}`; 
-            errDiv.style.display = 'block';
-        });
-
-        // Autenticação Observador
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('login-screen').classList.remove('active-screen');
-                document.getElementById('tab-chat').classList.add('active-screen');
-                let nome = user.displayName || user.email.split('@')[0];
-                document.getElementById('user-name').innerText = nome;
-                document.getElementById('user-avatar').innerText = nome.charAt(0).toUpperCase();
-            } else { window.switchTab('login'); }
-        });
-
-        // Botão Login/Registar Email
-        document.getElementById('btn-login-email').onclick = async () => {
-            const email = document.getElementById('email').value.trim(); 
-            const pwd = document.getElementById('password').value.trim();
-            
-            if (!email || !pwd) {
-                errDiv.innerHTML = "⚠️ Escreve um email e uma palavra-passe!";
-                errDiv.style.display = 'block'; return;
-            }
-
-            errDiv.style.display = 'none';
-            document.getElementById('btn-login-email').innerText = "A carregar...";
-
-            try { 
-                await signInWithEmailAndPassword(auth, email, pwd); 
-            } catch (error) { 
-                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-login-credentials') {
-                    try { 
-                        await createUserWithEmailAndPassword(auth, email, pwd); 
-                    } catch (errRegisto) { 
-                        errDiv.innerHTML = `❌ Erro ao Registar:<br>${errRegisto.code}`; 
-                        errDiv.style.display = 'block'; 
-                        document.getElementById('btn-login-email').innerText = "Entrar / Registar";
-                    }
-                } else {
-                    errDiv.innerHTML = `❌ Erro de Login:<br>${error.code}`; 
-                    errDiv.style.display = 'block'; 
-                    document.getElementById('btn-login-email').innerText = "Entrar / Registar";
-                }
-            }
-        };
-
-        // Botão Login Google
-        document.getElementById('btn-login-google').onclick = () => {
-            errDiv.style.display = 'none';
-            document.getElementById('btn-login-google').innerText = "A redirecionar...";
-            const provider = new GoogleAuthProvider();
-            signInWithRedirect(auth, provider).catch((error) => {
-                errDiv.innerHTML = `❌ Erro ao abrir Google:<br>${error.code}`;
-                errDiv.style.display = 'block';
-                document.getElementById('btn-login-google').innerHTML = "Google";
-            });
-        };
-
-        document.getElementById('btn-logout').onclick = () => signOut(auth);
-
-        // ==========================================
-        // ENSINAR O FIREBASE DB
-        // ==========================================
-        document.getElementById('btn-save-teach').onclick = async () => {
-            const t = document.getElementById('teach-trigger').value, r = document.getElementById('teach-response').value;
-            if (!t || !r) return alert("Preenche todos os campos!");
-            try { await addDoc(collection(db, "ia_brain"), { trigger: t, response: r }); alert("Memória Guardada!"); } catch(e) { alert("Erro D
+    alert("✅ Memória Guardada!");
+  } catch (e) {
+    alert("❌ Erro ao guardar!");
+    console.error(e);
+  }
+};
+        </script>
