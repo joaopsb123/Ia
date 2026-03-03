@@ -17,99 +17,13 @@ height:100vh;
 overflow:hidden;
 }
 
-/* LOGIN */
-#login-screen{
-position:fixed;
-inset:0;
-display:flex;
-justify-content:center;
-align-items:center;
-background:#0a0a0a;
-z-index:999;
-transition:.35s ease;
-}
-
-#login-screen.hidden{
-opacity:0;
-visibility:hidden;
-pointer-events:none;
-}
-
-.login-box{
-width:92%;
-max-width:380px;
-background:rgba(30,30,30,.92);
-backdrop-filter:blur(14px);
-border:1px solid #2a2a2a;
-border-radius:22px;
-padding:36px;
-display:flex;
-flex-direction:column;
-gap:14px;
-box-shadow:0 25px 70px rgba(0,0,0,.65);
-}
-
-.login-title{
-text-align:center;
-font-weight:600;
-font-size:22px;
-}
-
-.login-box input{
-background:#111;
-border:1px solid #333;
-padding:14px;
-border-radius:12px;
-color:white;
-outline:none;
-transition:.2s;
-}
-
-.login-box input:focus{
-border-color:#34A853;
-box-shadow:0 0 0 2px rgba(52,168,83,.25);
-}
-
-.btn{
-padding:14px;
-border:none;
-border-radius:12px;
-font-weight:600;
-cursor:pointer;
-transition:.2s;
-}
-
-.btn-primary{
-background:linear-gradient(135deg,#4285f4,#34A853);
-color:white;
-}
-
-.btn-google{
-background:white;
-color:black;
-}
-
-.btn.loading{
-opacity:.7;
-pointer-events:none;
-}
-
-.btn:hover{transform:translateY(-2px)}
-
-#error{
-color:#ff5c5c;
-font-size:13px;
-text-align:center;
-display:none;
-min-height:18px;
-}
-
 /* APP */
 .app{
 display:flex;
 height:100vh;
 }
 
+/* SIDEBAR */
 .sidebar{
 width:240px;
 background:#151515;
@@ -127,7 +41,6 @@ align-items:center;
 background:#1f1f1f;
 padding:10px;
 border-radius:12px;
-cursor:pointer;
 }
 
 .avatar{
@@ -141,6 +54,7 @@ justify-content:center;
 font-weight:bold;
 }
 
+/* MAIN */
 .main{
 flex:1;
 display:flex;
@@ -153,6 +67,20 @@ padding:30px;
 overflow:auto;
 }
 
+.message{
+background:#1f1f1f;
+padding:12px 16px;
+border-radius:14px;
+margin-bottom:10px;
+max-width:70%;
+}
+
+.user-msg{
+background:#4285f4;
+align-self:flex-end;
+}
+
+/* INPUT */
 .input-wrap{
 padding:20px;
 }
@@ -195,155 +123,67 @@ transform:scale(1.05);
 
 <body>
 
-<!-- LOGIN -->
-<div id="login-screen">
-<div class="login-box">
-<div class="login-title">Minha IA</div>
-<div id="error"></div>
-
-<input id="email" type="email" placeholder="O teu e-mail">
-<input id="password" type="password" placeholder="A tua palavra-passe">
-
-<button id="btn-email" class="btn btn-primary">
-Entrar / Registar
-</button>
-
-<button id="btn-google" class="btn btn-google">
-Google Login
-</button>
-</div>
-</div>
-
-<!-- APP -->
 <div class="app">
 
 <div class="sidebar">
-<div class="user" id="btn-logout">
-<div class="avatar" id="avatar">U</div>
+<div class="user">
+<div class="avatar">U</div>
 <div>
-<div id="username">User</div>
-<div style="font-size:12px;color:#888">Sair</div>
+<div>Utilizador</div>
+<div style="font-size:12px;color:#888">Modo local</div>
 </div>
 </div>
 </div>
 
 <div class="main">
-<div class="chat">
+
+<div class="chat" id="chat">
 <h2>Sistema pronto 🚀</h2>
 </div>
 
 <div class="input-wrap">
 <div class="input-box">
-<input placeholder="Pede-me qualquer coisa...">
-<button class="send">↑</button>
-</div>
+<input id="input" placeholder="Escreve uma mensagem...">
+<button class="send" id="send">↑</button>
 </div>
 </div>
 
 </div>
+</div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import {
-getAuth,
-signInWithEmailAndPassword,
-createUserWithEmailAndPassword,
-GoogleAuthProvider,
-signInWithPopup,
-getRedirectResult,
-onAuthStateChanged,
-signOut
-} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+<script>
+const chat = document.getElementById("chat");
+const input = document.getElementById("input");
+const send = document.getElementById("send");
 
-/* CONFIG */
-const firebaseConfig={
-apiKey:"AIzaSyCrJ47i72d-rPtvOnXc84o0Enp0zkpYv_4",
-authDomain:"ia-123-a8ea8.firebaseapp.com",
-projectId:"ia-123-a8ea8",
-storageBucket:"ia-123-a8ea8.firebasestorage.app",
-messagingSenderId:"232554388490",
-appId:"1:232554388490:web:2ad57cab51484837f593f3"
+function addMessage(text, isUser=false){
+const msg = document.createElement("div");
+msg.className = "message" + (isUser ? " user-msg" : "");
+msg.innerText = text;
+chat.appendChild(msg);
+chat.scrollTop = chat.scrollHeight;
+}
+
+function botReply(text){
+setTimeout(()=>{
+addMessage("🤖 " + text);
+},600);
+}
+
+send.onclick = ()=>{
+const text = input.value.trim();
+if(!text) return;
+
+addMessage(text,true);
+input.value="";
+
+// respostas simples (placeholder)
+botReply("Recebi: " + text);
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-
-/* ELEMENTOS */
-const loginScreen=document.getElementById("login-screen");
-const errorBox=document.getElementById("error");
-
-const emailInput=document.getElementById("email");
-const passInput=document.getElementById("password");
-
-const btnEmail=document.getElementById("btn-email");
-const btnGoogle=document.getElementById("btn-google");
-const btnLogout=document.getElementById("btn-logout");
-
-/* OBSERVADOR */
-onAuthStateChanged(auth,user=>{
-if(user){
-loginScreen.classList.add("hidden");
-const nome=user.displayName||user.email.split("@")[0];
-username.innerText=nome;
-avatar.innerText=nome[0].toUpperCase();
-}else{
-loginScreen.classList.remove("hidden");
-}
+input.addEventListener("keypress",e=>{
+if(e.key==="Enter") send.click();
 });
-
-/* LOGIN INTELIGENTE */
-btnEmail.onclick=async()=>{
-const email=emailInput.value.trim();
-const pwd=passInput.value.trim();
-
-if(!email||!pwd){
-showError("⚠️ Preenche tudo");
-return;
-}
-
-btnEmail.classList.add("loading");
-btnEmail.innerText="A entrar...";
-
-try{
-await signInWithEmailAndPassword(auth,email,pwd);
-}catch(error){
-
-if(error.code==="auth/user-not-found"){
-try{
-await createUserWithEmailAndPassword(auth,email,pwd);
-}catch(e){
-showError("❌ "+e.code);
-}
-
-}else if(error.code==="auth/wrong-password"){
-showError("❌ Palavra-passe errada");
-
-}else{
-showError("❌ "+error.code);
-}
-}
-
-btnEmail.classList.remove("loading");
-btnEmail.innerText="Entrar / Registar";
-};
-
-/* GOOGLE LOGIN (🔥 melhor no mobile) */
-btnGoogle.onclick=async()=>{
-try{
-await signInWithPopup(auth,new GoogleAuthProvider());
-}catch(e){
-showError("❌ "+e.code);
-}
-};
-
-/* LOGOUT */
-btnLogout.onclick=()=>signOut(auth);
-
-/* ERRO BONITO */
-function showError(msg){
-errorBox.innerText=msg;
-errorBox.style.display="block";
-}
 </script>
 
 </body>
