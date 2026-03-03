@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Minha IA Ultimate V5</title>
+<title>Minha IA</title>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
@@ -18,7 +18,7 @@ overflow:hidden;
 display:flex;
 }
 
-/* LOGIN SCREEN */
+/* LOGIN */
 #login-screen{
 position:fixed;
 inset:0;
@@ -27,7 +27,7 @@ display:flex;
 justify-content:center;
 align-items:center;
 z-index:999;
-transition:opacity .4s ease, visibility .4s ease;
+transition:.35s ease;
 }
 
 #login-screen.hidden{
@@ -39,7 +39,7 @@ pointer-events:none;
 .login-box{
 background:rgba(30,30,30,.9);
 backdrop-filter:blur(12px);
-padding:40px;
+padding:38px;
 border-radius:20px;
 width:100%;
 max-width:380px;
@@ -67,7 +67,7 @@ transition:.2s;
 
 .login-box input:focus{
 border-color:#34A853;
-box-shadow:0 0 0 2px rgba(52,168,83,.2);
+box-shadow:0 0 0 2px rgba(52,168,83,.25);
 }
 
 .btn{
@@ -230,7 +230,7 @@ transform:scale(1.05);
 <!-- LOGIN -->
 <div id="login-screen">
 <div class="login-box">
-<h2>Minha IA <span style="color:#34A853">V5</span></h2>
+<h2>Minha IA</h2>
 <p id="login-error"></p>
 <input type="email" id="email" placeholder="O teu E-mail">
 <input type="password" id="password" placeholder="A tua Palavra-passe">
@@ -277,7 +277,7 @@ signInWithEmailAndPassword,createUserWithEmailAndPassword,
 onAuthStateChanged,signOut
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-/* CONFIG */
+/* FIREBASE CONFIG */
 const firebaseConfig={
 apiKey:"AIzaSyCrJ47i72d-rPtvOnXc84o0Enp0zkpYv_4",
 authDomain:"ia-123-a8ea8.firebaseapp.com",
@@ -290,8 +290,16 @@ appId:"1:232554388490:web:2ad57cab51484837f593f3"
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 
+/* ELEMENTOS */
 const loginScreen=document.getElementById("login-screen");
 const errDiv=document.getElementById("login-error");
+
+const emailInput=document.getElementById("email");
+const passwordInput=document.getElementById("password");
+
+const btnEmail=document.getElementById("btn-login-email");
+const btnGoogle=document.getElementById("btn-login-google");
+const btnLogout=document.getElementById("btn-logout");
 
 /* GOOGLE REDIRECT */
 getRedirectResult(auth).catch(e=>{
@@ -299,10 +307,10 @@ errDiv.innerHTML="❌ "+e.code;
 errDiv.style.display="block";
 });
 
-/* OBSERVADOR — AGORA CORRETO */
+/* OBSERVADOR */
 onAuthStateChanged(auth,user=>{
 if(user){
-loginScreen.classList.add("hidden"); // 🔥 aqui resolve
+loginScreen.classList.add("hidden");
 const nome=user.displayName||user.email.split("@")[0];
 document.getElementById("user-name").innerText=nome;
 document.getElementById("user-avatar").innerText=nome[0].toUpperCase();
@@ -311,16 +319,18 @@ loginScreen.classList.remove("hidden");
 }
 });
 
-/* EMAIL LOGIN */
-btn-login-email.onclick=async()=>{
+/* LOGIN EMAIL */
+btnEmail.onclick=async()=>{
 const email=emailInput.value.trim();
-const pwd=password.value.trim();
+const pwd=passwordInput.value.trim();
 
 if(!email||!pwd){
 errDiv.innerHTML="⚠️ Preenche tudo";
 errDiv.style.display="block";
 return;
 }
+
+errDiv.style.display="none";
 
 try{
 await signInWithEmailAndPassword(auth,email,pwd);
@@ -335,13 +345,13 @@ errDiv.style.display="block";
 };
 
 /* GOOGLE */
-btn-login-google.onclick=()=>{
+btnGoogle.onclick=()=>{
 const provider=new GoogleAuthProvider();
 signInWithRedirect(auth,provider);
 };
 
 /* LOGOUT */
-btn-logout.onclick=()=>signOut(auth);
+btnLogout.onclick=()=>signOut(auth);
 </script>
 
 </body>
