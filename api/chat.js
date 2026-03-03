@@ -1,16 +1,12 @@
-export default async function handler(req, res) {
+export const config = {
+  runtime: "edge",
+};
+
+export default async function handler(req) {
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ reply: "Method not allowed" });
-    }
+    const { messages } = await req.json();
 
-    const { messages } = req.body || {};
-
-    if (!messages) {
-      return res.status(400).json({ reply: "Mensagens vazias." });
-    }
-
-    const groqRes = await fetch(
+    const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
@@ -19,26 +15,22 @@ export default async function handler(req, res) {
           Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "llama-3.1-8b-instant",
+          model: "llama3-70b-8192",
           messages,
-          temperature: 0.7
+          stream: true,
         }),
       }
     );
 
-    const data = await groqRes.json();
-
-    if (!groqRes.ok) {
-      console.error("Groq error:", data);
-      return res.status(500).json({ reply: "Erro na IA." });
-    }
-
-    return res.status(200).json({
-      reply: data.choices?.[0]?.message?.content || "Sem resposta."
+    return new Response(response.body, {
+      headers: {
+        "Content-Type": "text/event-stream",
+      },
     });
-
   } catch (err) {
-    console.error("Server crash:", err);
-    return res.status(500).json({ reply: "Erro na IA." });
+    return new Response(
+      JSON.stringify({ reply: "Erro na IA." }),
+      { status: 500 }
+    );
   }
 }
