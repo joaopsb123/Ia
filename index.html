@@ -15,6 +15,7 @@ background:radial-gradient(circle at top,#161616,#0a0a0a);
 color:#ececec;
 height:100vh;
 display:flex;
+overflow:hidden;
 }
 
 /* LAYOUT */
@@ -26,39 +27,45 @@ height:100%;
 
 /* SIDEBAR */
 .sidebar{
-width:240px;
-background:#151515;
+width:260px;
+background:#121212;
 border-right:1px solid #2a2a2a;
 padding:20px;
 display:flex;
 flex-direction:column;
+gap:14px;
 }
 
 .logo{
+font-size:22px;
 font-weight:600;
-font-size:20px;
-margin-bottom:20px;
+margin-bottom:10px;
 }
 
-.user{
-margin-top:auto;
-display:flex;
-gap:10px;
-align-items:center;
+.status{
+font-size:13px;
+color:#4ade80;
+}
+
+.side-btn{
 background:#1f1f1f;
+border:1px solid #333;
 padding:10px;
-border-radius:12px;
+border-radius:10px;
+cursor:pointer;
+transition:.2s;
+font-size:14px;
 }
 
-.avatar{
-width:36px;
-height:36px;
-border-radius:50%;
-background:linear-gradient(135deg,#6b43a4,#4285f4);
-display:flex;
-align-items:center;
-justify-content:center;
-font-weight:bold;
+.side-btn:hover{
+background:#2a2a2a;
+transform:translateX(3px);
+}
+
+.counter{
+font-size:12px;
+color:#888;
+margin-top:auto;
 }
 
 /* MAIN */
@@ -76,16 +83,17 @@ padding:24px;
 overflow-y:auto;
 display:flex;
 flex-direction:column;
-gap:12px;
+gap:14px;
 scroll-behavior:smooth;
 }
 
 .msg{
 max-width:75%;
-padding:12px 16px;
-border-radius:16px;
-line-height:1.4;
+padding:13px 17px;
+border-radius:18px;
+line-height:1.45;
 animation:fade .25s ease;
+white-space:pre-wrap;
 }
 
 @keyframes fade{
@@ -157,8 +165,8 @@ font-size:16px;
 }
 
 .send{
-width:42px;
-height:42px;
+width:44px;
+height:44px;
 border-radius:50%;
 border:none;
 background:white;
@@ -167,7 +175,12 @@ font-weight:bold;
 transition:.15s;
 }
 
-.send:hover{
+.send:disabled{
+opacity:.5;
+cursor:not-allowed;
+}
+
+.send:hover:not(:disabled){
 background:#34A853;
 color:white;
 transform:scale(1.05);
@@ -185,22 +198,22 @@ transform:scale(1.05);
 
 <div class="app">
 
+<!-- SIDEBAR -->
 <div class="sidebar">
 <div class="logo">🤖 Minha IA</div>
+<div class="status">● Online</div>
 
-<div class="user">
-<div class="avatar">U</div>
-<div>
-<div>Modo IA</div>
-<div style="font-size:12px;color:#888">Online</div>
-</div>
-</div>
+<button class="side-btn" onclick="clearChat()">🧹 Limpar chat</button>
+<button class="side-btn" onclick="resetMemory()">🧠 Reset memória</button>
+
+<div class="counter" id="counter">Mensagens: 0</div>
 </div>
 
+<!-- MAIN -->
 <div class="main">
 
 <div id="chat" class="chat">
-<div class="msg bot-msg">Olá! 👋 Como posso ajudar?</div>
+<div class="msg bot-msg">Olá! 👋 Sou a tua IA. Em que posso ajudar?</div>
 </div>
 
 <div class="input-wrap">
@@ -217,69 +230,117 @@ transform:scale(1.05);
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 const send = document.getElementById("send");
+const counter = document.getElementById("counter");
+
+let messageCount = 0;
+let isThinking = false;
+
+let conversation = [
+  { role:"system", content:"Responde em português de forma amigável." }
+];
+
+/* contador */
+function updateCounter(){
+  counter.textContent = "Mensagens: " + messageCount;
+}
 
 /* adicionar mensagem */
 function addMessage(text, isUser=false){
   const msg = document.createElement("div");
   msg.className = "msg " + (isUser ? "user-msg" : "bot-msg");
-  msg.innerText = text;
+  msg.textContent = text;
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
+  messageCount++;
+  updateCounter();
+  return msg;
 }
 
-/* typing animation */
+/* limpar chat */
+function clearChat(){
+  chat.innerHTML = "";
+  messageCount = 0;
+  updateCounter();
+}
+
+/* reset memória */
+function resetMemory(){
+  conversation = [
+    { role:"system", content:"Responde em português de forma amigável." }
+  ];
+  addMessage("Memória reiniciada.");
+}
+
+/* typing */
 function showTyping(){
   const div = document.createElement("div");
   div.className = "typing";
   div.id = "typing";
-
-  div.innerHTML = `
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-  `;
-
+  div.innerHTML = `<div class="dot"></div><div class="dot"></div><div class="dot"></div>`;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
 
 function removeTyping(){
-  const t = document.getElementById("typing");
+  const t=document.getElementById("typing");
   if(t) t.remove();
 }
 
-/* IA REAL */
-async function botReply(text){
+/* escrever suave */
+async function typeWriter(el,text){
+  el.textContent="";
+  for(let i=0;i<text.length;i++){
+    el.textContent+=text[i];
+    chat.scrollTop=chat.scrollHeight;
+    await new Promise(r=>setTimeout(r,10));
+  }
+}
+
+/* IA */
+async function botReply(userText){
+  if(isThinking) return;
+  isThinking=true;
+  send.disabled=true;
+
   showTyping();
 
+  conversation.push({role:"user",content:userText});
+
   try{
-    const res = await fetch("/api/chat",{
+    const res=await fetch("/api/chat",{
       method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ message:text })
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({messages:conversation})
     });
 
-    const data = await res.json();
+    const data=await res.json();
     removeTyping();
-    addMessage(data.reply);
+
+    const msgEl=addMessage("",false);
+    await typeWriter(msgEl,data.reply);
+
+    conversation.push({role:"assistant",content:data.reply});
 
   }catch{
     removeTyping();
     addMessage("Erro ao contactar IA.");
   }
+
+  isThinking=false;
+  send.disabled=false;
 }
 
 /* enviar */
 function sendMessage(){
-  const text = input.value.trim();
-  if(!text) return;
+  const text=input.value.trim();
+  if(!text||isThinking) return;
 
   addMessage(text,true);
   input.value="";
   botReply(text);
 }
 
-send.onclick = sendMessage;
+send.onclick=sendMessage;
 input.addEventListener("keypress",e=>{
   if(e.key==="Enter") sendMessage();
 });
