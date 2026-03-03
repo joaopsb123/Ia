@@ -3,13 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Minha IA</title>
+<title>Assistente IA</title>
 
 <link rel="manifest" href="/manifest.json">
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui}
-body{background:#0b0b0b;color:#fff;height:100vh;display:flex;flex-direction:column}
+
+body{
+background:#0b0b0b;
+color:#fff;
+height:100vh;
+display:flex;
+flex-direction:column;
+}
 
 /* HEADER */
 .header{
@@ -23,6 +30,10 @@ padding:0 14px;
 font-weight:600;
 }
 
+.header-buttons button{
+margin-left:6px;
+}
+
 /* CHAT */
 .chat{
 flex:1;
@@ -31,10 +42,11 @@ padding:16px;
 display:flex;
 flex-direction:column;
 gap:14px;
+scroll-behavior:smooth;
 }
 
 .msg{
-max-width:90%;
+max-width:85%;
 padding:12px 16px;
 border-radius:16px;
 white-space:pre-wrap;
@@ -61,6 +73,7 @@ border:1px solid #333;
 border-radius:12px;
 padding:10px;
 color:#fff;
+font-size:16px;
 }
 
 button{
@@ -70,6 +83,12 @@ color:white;
 padding:10px 14px;
 border-radius:10px;
 cursor:pointer;
+font-weight:600;
+}
+
+button:disabled{
+opacity:.5;
+cursor:not-allowed;
 }
 
 /* MOBILE */
@@ -83,17 +102,17 @@ cursor:pointer;
 
 <div class="header">
 🤖 Assistente IA
-<div>
+<div class="header-buttons">
 <button onclick="startVoice()">🎤</button>
-<button onclick="stopSpeak()">🔊</button>
+<button onclick="speakLast()">🔊</button>
 </div>
 </div>
 
 <div id="chat" class="chat"></div>
 
 <div class="input-wrap">
-<textarea id="input" rows="1" placeholder="Escreve..."></textarea>
-<button onclick="sendMessage()">Enviar</button>
+<textarea id="input" rows="1" placeholder="Escreve uma mensagem..."></textarea>
+<button id="sendBtn" onclick="sendMessage()">Enviar</button>
 <button onclick="uploadImage()">📷</button>
 </div>
 
@@ -102,14 +121,13 @@ cursor:pointer;
 <script>
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
+const sendBtn = document.getElementById("sendBtn");
 
 let conversation = [
-  { role:"system", content:"Responde em português." }
+  { role:"system", content:"Responde em português de forma amigável." }
 ];
 
-/* =========================
-   MENSAGENS
-========================= */
+/* ================= MENSAGENS ================= */
 
 function addMsg(text,cls){
   const d=document.createElement("div");
@@ -120,62 +138,79 @@ function addMsg(text,cls){
   return d;
 }
 
-/* =========================
-   STREAM REAL
-========================= */
+/* ================= STREAM REAL ================= */
 
 async function sendMessage(){
   const text=input.value.trim();
   if(!text) return;
 
+  sendBtn.disabled = true;
+
   addMsg(text,"user");
   input.value="";
 
-  const botEl=addMsg("...","bot");
+  const botEl=addMsg("","bot");
 
   conversation.push({role:"user",content:text});
 
-  const res=await fetch("/api/chat",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({messages:conversation})
-  });
+  try{
+    const res=await fetch("/api/chat",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({messages:conversation})
+    });
 
-  const reader=res.body.getReader();
-  const decoder=new TextDecoder();
+    if(!res.body){
+      botEl.textContent="Erro na IA.";
+      sendBtn.disabled = false;
+      return;
+    }
 
-  botEl.textContent="";
+    const reader=res.body.getReader();
+    const decoder=new TextDecoder();
 
-  while(true){
-    const {done,value}=await reader.read();
-    if(done) break;
+    let buffer="";
 
-    const chunk=decoder.decode(value);
-    const lines=chunk.split("\n");
+    while(true){
+      const {done,value}=await reader.read();
+      if(done) break;
 
-    for(const line of lines){
-      if(line.startsWith("data: ")){
-        const json=line.replace("data: ","").trim();
-        if(json==="[DONE]") break;
+      buffer += decoder.decode(value,{stream:true});
+
+      const parts = buffer.split("\n");
+      buffer = parts.pop();
+
+      for(const part of parts){
+        const line = part.trim();
+        if(!line.startsWith("data:")) continue;
+
+        const jsonStr = line.replace("data:","").trim();
+        if(jsonStr === "[DONE]") continue;
 
         try{
-          const parsed=JSON.parse(json);
-          const token=parsed.choices?.[0]?.delta?.content;
+          const data = JSON.parse(jsonStr);
+          const token = data.choices?.[0]?.delta?.content;
           if(token){
-            botEl.textContent+=token;
-            chat.scrollTop=chat.scrollHeight;
+            botEl.textContent += token;
+            chat.scrollTop = chat.scrollHeight;
           }
         }catch{}
       }
     }
+
+    conversation.push({
+      role:"assistant",
+      content:botEl.textContent
+    });
+
+  }catch(err){
+    botEl.textContent="Erro ao contactar IA.";
   }
 
-  conversation.push({role:"assistant",content:botEl.textContent});
+  sendBtn.disabled = false;
 }
 
-/* =========================
-   VOZ OUVIR
-========================= */
+/* ================= VOZ OUVIR ================= */
 
 function startVoice(){
   const rec=new (window.SpeechRecognition||window.webkitSpeechRecognition)();
@@ -188,22 +223,19 @@ function startVoice(){
   rec.start();
 }
 
-/* =========================
-   VOZ FALAR
-========================= */
+/* ================= VOZ FALAR ================= */
 
-function stopSpeak(){
+function speakLast(){
   const text=chat.lastChild?.textContent;
   if(!text) return;
 
+  speechSynthesis.cancel();
   const ut=new SpeechSynthesisUtterance(text);
   ut.lang="pt-PT";
   speechSynthesis.speak(ut);
 }
 
-/* =========================
-   UPLOAD IMAGEM
-========================= */
+/* ================= UPLOAD IMAGEM ================= */
 
 function uploadImage(){
   document.getElementById("imgInput").click();
@@ -216,9 +248,7 @@ document.getElementById("imgInput").onchange=e=>{
   addMsg("📷 Imagem enviada: "+file.name,"user");
 };
 
-/* =========================
-   PWA
-========================= */
+/* ================= PWA ================= */
 
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("/sw.js");
