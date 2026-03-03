@@ -4,15 +4,10 @@ export default async function handler(req, res) {
       return res.status(405).json({ reply: "Method not allowed" });
     }
 
-    const { message } = req.body || {};
+    const { messages } = req.body || {};
 
-    if (!message) {
-      return res.status(400).json({ reply: "Mensagem vazia." });
-    }
-
-    if (!process.env.GROQ_API_KEY) {
-      console.error("SEM GROQ API KEY");
-      return res.status(500).json({ reply: "API não configurada." });
+    if (!messages) {
+      return res.status(400).json({ reply: "Mensagens vazias." });
     }
 
     const groqRes = await fetch(
@@ -25,16 +20,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           model: "llama-3.1-8b-instant",
-          messages: [
-            {
-              role: "system",
-              content: "Responde em português de forma amigável."
-            },
-            {
-              role: "user",
-              content: message
-            }
-          ],
+          messages,
           temperature: 0.7
         }),
       }
