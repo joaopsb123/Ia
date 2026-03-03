@@ -6,28 +6,27 @@
 <title>Minha IA</title>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
 
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif}
 
 body{
-background:radial-gradient(circle at top,#151515,#0b0b0b);
+background:radial-gradient(circle at top,#161616,#0a0a0a);
 color:#ececec;
 height:100vh;
 overflow:hidden;
-display:flex;
 }
 
 /* LOGIN */
 #login-screen{
 position:fixed;
 inset:0;
-background:#0b0b0b;
 display:flex;
 justify-content:center;
 align-items:center;
+background:#0a0a0a;
 z-index:999;
-transition:.35s ease;
+transition:.4s ease;
 }
 
 #login-screen.hidden{
@@ -37,30 +36,37 @@ pointer-events:none;
 }
 
 .login-box{
-background:rgba(30,30,30,.9);
-backdrop-filter:blur(12px);
-padding:38px;
-border-radius:20px;
-width:100%;
+width:92%;
 max-width:380px;
+background:rgba(30,30,30,.92);
+backdrop-filter:blur(14px);
+border:1px solid #2a2a2a;
+border-radius:22px;
+padding:36px;
 display:flex;
 flex-direction:column;
 gap:14px;
-border:1px solid #2a2a2a;
-box-shadow:0 20px 60px rgba(0,0,0,.6);
+box-shadow:0 25px 70px rgba(0,0,0,.65);
+animation:pop .4s ease;
 }
 
-.login-box h2{
+@keyframes pop{
+from{transform:scale(.9);opacity:0}
+to{transform:scale(1);opacity:1}
+}
+
+.login-title{
 text-align:center;
 font-weight:600;
+font-size:22px;
 }
 
 .login-box input{
-background:#0f0f0f;
+background:#111;
 border:1px solid #333;
 padding:14px;
+border-radius:12px;
 color:white;
-border-radius:10px;
 outline:none;
 transition:.2s;
 }
@@ -73,9 +79,9 @@ box-shadow:0 0 0 2px rgba(52,168,83,.25);
 .btn{
 padding:14px;
 border:none;
-border-radius:10px;
-cursor:pointer;
+border-radius:12px;
 font-weight:600;
+cursor:pointer;
 transition:.2s;
 }
 
@@ -89,62 +95,45 @@ background:white;
 color:black;
 }
 
-.btn:hover{
-transform:translateY(-2px);
-opacity:.95;
+.btn.loading{
+opacity:.7;
+pointer-events:none;
 }
 
-#login-error{
-color:#ff4d4d;
+.btn:hover{transform:translateY(-2px)}
+
+#error{
+color:#ff5c5c;
 font-size:13px;
 text-align:center;
 display:none;
+min-height:18px;
 }
 
 /* APP */
-.app-container{
+.app{
 display:flex;
-width:100%;
-height:100%;
+height:100vh;
 }
 
-/* SIDEBAR */
 .sidebar{
-width:250px;
-background:rgba(20,20,20,.9);
-backdrop-filter:blur(10px);
+width:240px;
+background:#151515;
 border-right:1px solid #2a2a2a;
 padding:20px;
 display:flex;
 flex-direction:column;
-gap:12px;
 }
 
-.menu-btn{
-background:#1f1f1f;
-border:1px solid #333;
-color:white;
-padding:12px;
-border-radius:10px;
-cursor:pointer;
-transition:.2s;
-}
-
-.menu-btn:hover{
-background:#2a2a2a;
-transform:translateX(4px);
-}
-
-.user-profile{
+.user{
 margin-top:auto;
 display:flex;
 gap:10px;
 align-items:center;
 background:#1f1f1f;
 padding:10px;
-border-radius:10px;
+border-radius:12px;
 cursor:pointer;
-border:1px solid #333;
 }
 
 .avatar{
@@ -158,66 +147,51 @@ justify-content:center;
 font-weight:bold;
 }
 
-/* MAIN */
-.main-content{
+.main{
 flex:1;
 display:flex;
 flex-direction:column;
 }
 
-.chat-area{
+.chat{
 flex:1;
-overflow:auto;
 padding:30px;
-max-width:900px;
-margin:0 auto;
-width:100%;
+overflow:auto;
 }
 
-/* INPUT */
-.input-wrapper{
+.input-wrap{
 padding:20px;
-max-width:900px;
-margin:0 auto;
-width:100%;
 }
 
-.input-area{
+.input-box{
 background:#1a1a1a;
+border:1px solid #333;
 border-radius:30px;
-padding:10px 18px;
+padding:10px 16px;
 display:flex;
 gap:10px;
-border:1px solid #333;
-transition:.2s;
 }
 
-.input-area:focus-within{
-border-color:#34A853;
-box-shadow:0 0 15px rgba(52,168,83,.25);
-}
-
-.input-area input{
+.input-box input{
 flex:1;
 background:transparent;
 border:none;
 color:white;
-font-size:16px;
 outline:none;
+font-size:16px;
 }
 
-.btn-send{
-background:white;
-border:none;
+.send{
 width:42px;
 height:42px;
 border-radius:50%;
+border:none;
+background:white;
 cursor:pointer;
-font-size:18px;
-transition:.2s;
+font-weight:bold;
 }
 
-.btn-send:hover{
+.send:hover{
 background:#34A853;
 color:white;
 transform:scale(1.05);
@@ -230,54 +204,59 @@ transform:scale(1.05);
 <!-- LOGIN -->
 <div id="login-screen">
 <div class="login-box">
-<h2>Minha IA</h2>
-<p id="login-error"></p>
-<input type="email" id="email" placeholder="O teu E-mail">
-<input type="password" id="password" placeholder="A tua Palavra-passe">
-<button class="btn btn-primary" id="btn-login-email">Entrar / Registar</button>
-<button class="btn btn-google" id="btn-login-google">Google Login</button>
+<div class="login-title">Minha IA</div>
+<div id="error"></div>
+
+<input id="email" type="email" placeholder="O teu e-mail">
+<input id="password" type="password" placeholder="A tua palavra-passe">
+
+<button id="btn-email" class="btn btn-primary">
+Entrar / Registar
+</button>
+
+<button id="btn-google" class="btn btn-google">
+Google Login
+</button>
 </div>
 </div>
 
-<div class="app-container">
+<!-- APP -->
+<div class="app">
 
-<aside class="sidebar">
-<button class="menu-btn">💬 Chat</button>
-
-<div class="user-profile" id="btn-logout">
-<div class="avatar" id="user-avatar">U</div>
+<div class="sidebar">
+<div class="user" id="btn-logout">
+<div class="avatar" id="avatar">U</div>
 <div>
-<div id="user-name">User</div>
+<div id="username">User</div>
 <div style="font-size:12px;color:#888">Sair</div>
 </div>
 </div>
-</aside>
+</div>
 
-<main class="main-content">
-
-<div class="chat-area">
+<div class="main">
+<div class="chat">
 <h2>Sistema pronto 🚀</h2>
 </div>
 
-<div class="input-wrapper">
-<div class="input-area">
-<input id="chat-input" placeholder="Pede-me qualquer coisa...">
-<button class="btn-send">↑</button>
+<div class="input-wrap">
+<div class="input-box">
+<input placeholder="Pede-me qualquer coisa...">
+<button class="send">↑</button>
+</div>
 </div>
 </div>
 
-</main>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import {
-getAuth,signInWithRedirect,getRedirectResult,GoogleAuthProvider,
-signInWithEmailAndPassword,createUserWithEmailAndPassword,
+getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,
+GoogleAuthProvider,signInWithRedirect,getRedirectResult,
 onAuthStateChanged,signOut
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-/* FIREBASE CONFIG */
+/* CONFIG */
 const firebaseConfig={
 apiKey:"AIzaSyCrJ47i72d-rPtvOnXc84o0Enp0zkpYv_4",
 authDomain:"ia-123-a8ea8.firebaseapp.com",
@@ -292,56 +271,67 @@ const auth=getAuth(app);
 
 /* ELEMENTOS */
 const loginScreen=document.getElementById("login-screen");
-const errDiv=document.getElementById("login-error");
+const errorBox=document.getElementById("error");
 
 const emailInput=document.getElementById("email");
-const passwordInput=document.getElementById("password");
+const passInput=document.getElementById("password");
 
-const btnEmail=document.getElementById("btn-login-email");
-const btnGoogle=document.getElementById("btn-login-google");
+const btnEmail=document.getElementById("btn-email");
+const btnGoogle=document.getElementById("btn-google");
 const btnLogout=document.getElementById("btn-logout");
 
-/* GOOGLE REDIRECT */
-getRedirectResult(auth).catch(e=>{
-errDiv.innerHTML="❌ "+e.code;
-errDiv.style.display="block";
-});
+/* REDIRECT GOOGLE */
+getRedirectResult(auth).catch(()=>{});
 
 /* OBSERVADOR */
 onAuthStateChanged(auth,user=>{
 if(user){
 loginScreen.classList.add("hidden");
 const nome=user.displayName||user.email.split("@")[0];
-document.getElementById("user-name").innerText=nome;
-document.getElementById("user-avatar").innerText=nome[0].toUpperCase();
+username.innerText=nome;
+avatar.innerText=nome[0].toUpperCase();
 }else{
 loginScreen.classList.remove("hidden");
 }
 });
 
-/* LOGIN EMAIL */
+/* LOGIN INTELIGENTE */
 btnEmail.onclick=async()=>{
 const email=emailInput.value.trim();
-const pwd=passwordInput.value.trim();
+const pwd=passInput.value.trim();
 
 if(!email||!pwd){
-errDiv.innerHTML="⚠️ Preenche tudo";
-errDiv.style.display="block";
+showError("⚠️ Preenche tudo");
 return;
 }
 
-errDiv.style.display="none";
+btnEmail.classList.add("loading");
+btnEmail.innerText="A entrar...";
 
 try{
 await signInWithEmailAndPassword(auth,email,pwd);
-}catch{
+}catch(error){
+
+if(error.code==="auth/user-not-found"){
 try{
 await createUserWithEmailAndPassword(auth,email,pwd);
 }catch(e){
-errDiv.innerHTML="❌ "+e.code;
-errDiv.style.display="block";
+showError("❌ "+e.code);
+}
+
+}else if(error.code==="auth/wrong-password"){
+showError("❌ Palavra-passe errada");
+
+}else if(error.code==="auth/email-already-in-use"){
+showError("⚠️ Conta já existe. Tenta iniciar sessão.");
+
+}else{
+showError("❌ "+error.code);
 }
 }
+
+btnEmail.classList.remove("loading");
+btnEmail.innerText="Entrar / Registar";
 };
 
 /* GOOGLE */
@@ -352,6 +342,12 @@ signInWithRedirect(auth,provider);
 
 /* LOGOUT */
 btnLogout.onclick=()=>signOut(auth);
+
+/* ERRO BONITO */
+function showError(msg){
+errorBox.innerText=msg;
+errorBox.style.display="block";
+}
 </script>
 
 </body>
